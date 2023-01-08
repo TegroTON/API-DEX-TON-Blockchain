@@ -11,32 +11,22 @@ import java.time.Instant
 import java.util.*
 import javax.persistence.*
 
-@Entity(name = "swap")
-@Table(name = "swaps")
-open class Swap(
+@Entity(name = "liquidity")
+@Table
+open class Liquidity(
     @Convert(converter = MsgAddressConverter::class)
-    @Column(name = "destination", nullable = false, columnDefinition = "BYTEA")
-    open val destination: MsgAddress,
-
-    @Column(name = "base_amount", nullable = false, columnDefinition = "NUMERIC")
-    open val baseAmount: BigInteger,
+    @Column(name = "address", nullable = false, columnDefinition = "BYTEA")
+    open val address: MsgAddress,
 
     @Convert(converter = MsgAddressConverter::class)
     @Column(name = "exchange_pair", nullable = false, columnDefinition = "BYTEA")
     open val exchangePair: MsgAddress,
 
-    @Column(name = "quote_amount", nullable = false, columnDefinition = "NUMERIC")
-    open val quoteAmount: BigInteger,
+    @Column(name = "amount", nullable = false, columnDefinition = "NUMERIC")
+    open val amount: BigInteger,
 
-    @Column(name = "inverse", nullable = false)
-    open val inverse: Boolean,
-
-    @Convert(converter = MsgAddressConverter::class)
-    @Column(name = "referrer", nullable = false, columnDefinition = "BYTEA")
-    open val referrer: MsgAddress,
-
-    @Column(name = "query_id", nullable = false)
-    open val queryId: ULong,
+    @Column(name = "burned", nullable = false)
+    open val burned: Boolean,
 
     @Convert(converter = TransactionConverter::class)
     @Column(name = "transaction", nullable = false, columnDefinition = "BYTEA")

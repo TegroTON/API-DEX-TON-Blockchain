@@ -15,9 +15,6 @@ open class ExchangePair(
     @Column(name = "address", nullable = false, unique = true, columnDefinition = "BYTEA")
     open val address: MsgAddress,
 
-    @Column(name = "approved", nullable = false)
-    open var approved: Boolean = false,
-
     @Column(name = "timestamp", nullable = false, columnDefinition = "TIMESTAMPTZ")
     open var timestamp: Instant = Instant.now()
 ) {

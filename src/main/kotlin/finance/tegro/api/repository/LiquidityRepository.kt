@@ -1,12 +1,12 @@
 package finance.tegro.api.repository
 
-import finance.tegro.api.entity.Wallet
+import finance.tegro.api.entity.Liquidity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import org.ton.block.MsgAddress
 import java.util.*
 
 @Repository
-interface WalletRepository : JpaRepository<Wallet, UUID> {
-    fun findByAddress(address: MsgAddress): Optional<Wallet>
+interface LiquidityRepository : JpaRepository<Liquidity, UUID> {
+    fun findByAddress(address: MsgAddress): List<Liquidity>
 }
