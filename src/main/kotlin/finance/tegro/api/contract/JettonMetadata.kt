@@ -34,7 +34,7 @@ data class JettonMetadata(
 
         private suspend fun getOffchainMetadata(uri: String, webClient: WebClient): JettonMetadata =
             webClient.get()
-                .uri(uri)
+                .uri(if (uri.startsWith("ipfs://")) "https://cloudflare-ipfs.com/ipfs/" + uri.drop("ipfs://".length) else uri)
                 .retrieve()
                 .awaitBody()
 

@@ -8,5 +8,7 @@ import java.util.*
 
 @Repository
 interface LiquidityRepository : JpaRepository<Liquidity, UUID> {
-    fun findByAddress(address: MsgAddress): List<Liquidity>
+    fun findByAddress(address: MsgAddress): Optional<Liquidity>
+    fun findByOwner(owner: MsgAddress): List<Liquidity>
+    fun findByOwnerAndExchangePair(owner: MsgAddress, exchangePair: MsgAddress): Optional<Liquidity>
 }

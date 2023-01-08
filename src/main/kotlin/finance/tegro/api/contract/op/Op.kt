@@ -13,7 +13,7 @@ private object OpCombinator : TlbCombinator<Op>() {
         listOf(
             TransferOp.tlbCodec(), TransferNotificationOp.tlbCodec(), ExcessesOp.tlbCodec(),
             BurnOp.tlbCodec(), BurnNotificationOp.tlbCodec(), SwapTonOp.tlbCodec(),
-            SuccessfulSwapOp.tlbCodec(),
+            SuccessfulSwapOp.tlbCodec(), InternalTransferOp.tlbCodec(),
         )
 
     override fun getConstructor(value: Op): TlbConstructor<out Op> = when (value) {
@@ -24,5 +24,6 @@ private object OpCombinator : TlbCombinator<Op>() {
         is BurnNotificationOp -> BurnNotificationOp.tlbCodec()
         is SwapTonOp -> SwapTonOp.tlbCodec()
         is SuccessfulSwapOp -> SuccessfulSwapOp.tlbCodec()
+        is InternalTransferOp -> InternalTransferOp.tlbCodec()
     }
 }

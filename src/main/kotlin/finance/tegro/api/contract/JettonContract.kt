@@ -60,7 +60,7 @@ data class JettonContract(
                 LiteServerAccountId(address),
                 referenceBlock ?: liteClient.getLastBlockId(),
                 "get_wallet_address",
-                VmStackValue.of(CellBuilder.createCell { storeTlb(MsgAddress, owner) })
+                VmStackValue.of(CellBuilder.createCell { storeTlb(MsgAddress, owner) }.beginParse())
             ).toMutableVmStack().let {
                 val walletAddressSlice = it.popSlice()
                 require(it.isEmpty()) { "Stack is not empty" }

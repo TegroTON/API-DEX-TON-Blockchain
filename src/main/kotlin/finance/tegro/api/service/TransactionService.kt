@@ -1,8 +1,11 @@
 package finance.tegro.api.service
 
 import finance.tegro.api.contract.op.*
+import finance.tegro.api.entity.Liquidity
 import finance.tegro.api.entity.Swap
 import finance.tegro.api.loadTransaction
+import finance.tegro.api.processor.AddLiquidityProcessor
+import finance.tegro.api.processor.FetchLiquidityProcessor
 import finance.tegro.api.processor.FetchReserveProcessor
 import finance.tegro.api.repository.ExchangePairRepository
 import finance.tegro.api.repository.LiquidityRepository
@@ -19,6 +22,7 @@ import org.ton.cell.Cell
 import org.ton.lite.api.liteserver.LiteServerTransactionInfo
 import org.ton.tlb.exception.UnknownTlbConstructorException
 import org.ton.tlb.loadTlb
+import java.math.BigInteger
 import java.time.Instant
 
 @Service
@@ -28,7 +32,9 @@ class TransactionService(
     private val reserveRepository: ReserveRepository,
     private val swapRepository: SwapRepository,
 
+    private val addLiquiditiyProcessor: AddLiquidityProcessor,
     private val fetchReserveProcessor: FetchReserveProcessor,
+    private val fetchLiquidityProcessor: FetchLiquidityProcessor,
 
     private val jobLauncher: JobLauncher,
     private val updateReserveJob: Job,
@@ -61,7 +67,7 @@ class TransactionService(
             return // Only interested in internal messages
 
         val inMsgOp = parseOp(inMsg.body)
-        val outMsgOp = parseOp(outMsg?.body)
+        val outMsgOp = parseOp(outMsg.body)
 
         logger.debug { "inMsgOp=$inMsgOp -> outMsgOp=$outMsgOp" }
 
@@ -75,6 +81,7 @@ class TransactionService(
                 if (outMsgInnerOp !is SuccessfulSwapPayloadOp)
                     return // Only interested in successful swaps
 
+                logger.debug { "${outMsgOp.queryId} swap ${inMsgInfo.value.coins} TON -> ${outMsgOp.amount.value} Jetton" }
                 swapRepository.save(
                     Swap(
                         destination = outMsgInfo.dest,
@@ -92,28 +99,55 @@ class TransactionService(
             }
 
             is TransferNotificationOp -> {
-                if (outMsgOp !is SuccessfulSwapOp)
-                    return // Only interested in successful swaps
-
                 val inMsgInnerOp = parsePayloadOp(inMsgOp.forwardPayload)
 
-                if (inMsgInnerOp !is SwapJettonPayloadOp)
-                    return
+                when (inMsgInnerOp) {
+                    is SwapJettonPayloadOp -> {
+                        if (outMsgOp !is SuccessfulSwapOp)
+                            return // Only interested in successful swaps
 
-                swapRepository.save(
-                    Swap(
-                        destination = outMsgInfo.dest,
-                        baseAmount = outMsgInfo.value.coins.amount.value,
+                        logger.debug { "${outMsgOp.queryId}: swap Jetton -> TON " }
+                        swapRepository.save(
+                            Swap(
+                                destination = outMsgInfo.dest,
+                                baseAmount = outMsgInfo.value.coins.amount.value,
+                                exchangePair = exchangePair,
+                                quoteAmount = inMsgOp.amount.value,
+                                inverse = true, // Quote (Token) -> Base (TON) swap
+                                referrer = parseOpReferrer(inMsgInnerOp.params.customPayload),
+                                queryId = outMsgOp.queryId,
+                                block = blockId,
+                                transaction = transaction,
+                                timestamp = Instant.now(),
+                            )
+                        )
+                    }
+
+                    is AddLiquidityPayloadOp -> {
+                        logger.debug { "Processing add liquidity $inMsgInnerOp" }
+                        addLiquiditiyProcessor.process(blockId to (inMsgOp.sender to exchangePair))
+                            .let { fetchLiquidityProcessor.process(blockId to it) }
+                            .let { liquidityRepository.save(it) }
+                    }
+
+                    else -> return
+                }
+            }
+
+            is BurnNotificationOp -> {
+                logger.debug { "Processing burn notification $inMsgOp" }
+                liquidityRepository.findByAddress(inMsgInfo.src).orElse(
+                    Liquidity(
+                        address = inMsgInfo.src,
+                        owner = inMsgOp.sender,
                         exchangePair = exchangePair,
-                        quoteAmount = inMsgOp.amount.value,
-                        inverse = true, // Quote (Token) -> Base (TON) swap
-                        referrer = parseOpReferrer(inMsgInnerOp.params.customPayload),
-                        queryId = outMsgOp.queryId,
+                        balance = BigInteger.ZERO,
                         block = blockId,
-                        transaction = transaction,
                         timestamp = Instant.now(),
                     )
                 )
+                    .let { fetchLiquidityProcessor.process(blockId to it) }
+                    .let { liquidityRepository.save(it) }
             }
 
             else -> {
