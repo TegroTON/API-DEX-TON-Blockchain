@@ -1,6 +1,7 @@
 package finance.tegro.api.contract
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ByteArraySerializer
 import mu.KLogging
@@ -19,6 +20,7 @@ data class JettonMetadata(
     val description: String?,
     val image: String?,
     @JsonSerialize(using = ByteArraySerializer::class)
+    @JsonProperty("image_data")
     val imageData: ByteArray?,
     val symbol: String?,
     val decimals: Int = 9,

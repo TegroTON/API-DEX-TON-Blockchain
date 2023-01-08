@@ -1,5 +1,6 @@
 package finance.tegro.api.service
 
+import finance.tegro.api.contract.SwapParams
 import finance.tegro.api.contract.op.*
 import finance.tegro.api.entity.Liquidity
 import finance.tegro.api.entity.Swap
@@ -66,7 +67,19 @@ class TransactionService(
         if (outMsgInfo !is IntMsgInfo)
             return // Only interested in internal messages
 
-        val inMsgOp = parseOp(inMsg.body)
+        val inMsgOp = parseOp(inMsg.body)?.let {
+            if (it is SuccessfulSwapOp) { // Routing is happening here, simply unwrap inner op
+                logger.debug { "routed operation: $it" }
+                it.payload.value?.refs?.firstOrNull()?.parse { loadTlb(SwapParams) }?.let { params ->
+                    SwapTonOp(
+                        queryId = it.queryId,
+                        params = params,
+                    )
+                }
+            } else {
+                it
+            }
+        }
         val outMsgOp = parseOp(outMsg.body)
 
         logger.debug { "inMsgOp=$inMsgOp -> outMsgOp=$outMsgOp" }
@@ -81,7 +94,7 @@ class TransactionService(
                 if (outMsgInnerOp !is SuccessfulSwapPayloadOp)
                     return // Only interested in successful swaps
 
-                logger.debug { "${outMsgOp.queryId} swap ${inMsgInfo.value.coins} TON -> ${outMsgOp.amount.value} Jetton" }
+                logger.debug { "${outMsgOp.queryId}: swap ${inMsgInfo.value.coins} TON -> ${outMsgOp.amount.value} Jetton" }
                 swapRepository.save(
                     Swap(
                         destination = outMsgInfo.dest,
@@ -106,7 +119,7 @@ class TransactionService(
                         if (outMsgOp !is SuccessfulSwapOp)
                             return // Only interested in successful swaps
 
-                        logger.debug { "${outMsgOp.queryId}: swap Jetton -> TON " }
+                        logger.debug { "${outMsgOp.queryId}: swap ${inMsgOp.amount.value} Jetton -> ${outMsgInfo.value.coins} TON" }
                         swapRepository.save(
                             Swap(
                                 destination = outMsgInfo.dest,
@@ -124,7 +137,7 @@ class TransactionService(
                     }
 
                     is AddLiquidityPayloadOp -> {
-                        logger.debug { "Processing add liquidity $inMsgInnerOp" }
+                        logger.debug { "processing add liquidity $inMsgInnerOp" }
                         addLiquiditiyProcessor.process(blockId to (inMsgOp.sender to exchangePair))
                             .let { fetchLiquidityProcessor.process(blockId to it) }
                             .let { liquidityRepository.save(it) }
@@ -135,7 +148,7 @@ class TransactionService(
             }
 
             is BurnNotificationOp -> {
-                logger.debug { "Processing burn notification $inMsgOp" }
+                logger.debug { "processing burn notification $inMsgOp" }
                 liquidityRepository.findByAddress(inMsgInfo.src).orElse(
                     Liquidity(
                         address = inMsgInfo.src,
@@ -178,7 +191,11 @@ class TransactionService(
         if ((cell.value?.refs?.size ?: 0) > 0) {
             parseOpReferrer(Maybe.of(cell.value?.refs?.first()))
         } else {
-            cell.value?.parse { loadTlb(MsgAddress) } ?: AddrNone
+            try {
+                cell.value?.parse { loadTlb(MsgAddress) } ?: AddrNone
+            } catch (e: Exception) {
+                AddrNone
+            }
         }
 
     companion object : KLogging()
