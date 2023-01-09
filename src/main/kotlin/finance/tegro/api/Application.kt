@@ -6,11 +6,13 @@ import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.scheduling.annotation.EnableScheduling
 
 @ConfigurationPropertiesScan("finance.tegro.api.properties")
 @EnableJpaRepositories("finance.tegro.api.repository")
 @EntityScan("finance.tegro.api.entity")
 @EnableBatchProcessing
+@EnableScheduling
 @SpringBootApplication
 class Application {
     companion object {
