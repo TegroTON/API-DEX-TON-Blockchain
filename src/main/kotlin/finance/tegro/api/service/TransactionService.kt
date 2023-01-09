@@ -2,10 +2,8 @@ package finance.tegro.api.service
 
 import finance.tegro.api.contract.SwapParams
 import finance.tegro.api.contract.op.*
-import finance.tegro.api.entity.Liquidity
 import finance.tegro.api.entity.Swap
 import finance.tegro.api.loadTransaction
-import finance.tegro.api.processor.AddLiquidityProcessor
 import finance.tegro.api.processor.FetchLiquidityProcessor
 import finance.tegro.api.processor.FetchReserveProcessor
 import finance.tegro.api.repository.ExchangePairRepository
@@ -14,8 +12,6 @@ import finance.tegro.api.repository.ReserveRepository
 import finance.tegro.api.repository.SwapRepository
 import io.awspring.cloud.messaging.listener.annotation.SqsListener
 import mu.KLogging
-import org.springframework.batch.core.Job
-import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.messaging.Message
 import org.springframework.stereotype.Service
 import org.ton.block.*
@@ -23,7 +19,6 @@ import org.ton.cell.Cell
 import org.ton.lite.api.liteserver.LiteServerTransactionInfo
 import org.ton.tlb.exception.UnknownTlbConstructorException
 import org.ton.tlb.loadTlb
-import java.math.BigInteger
 import java.time.Instant
 
 @Service
@@ -33,14 +28,10 @@ class TransactionService(
     private val reserveRepository: ReserveRepository,
     private val swapRepository: SwapRepository,
 
-    private val addLiquiditiyProcessor: AddLiquidityProcessor,
     private val fetchReserveProcessor: FetchReserveProcessor,
     private val fetchLiquidityProcessor: FetchLiquidityProcessor,
-
-    private val jobLauncher: JobLauncher,
-    private val updateReserveJob: Job,
 ) {
-    @SqsListener("transactions")
+    @SqsListener("transactions-test")
     fun onTransaction(message: Message<LiteServerTransactionInfo>) {
         val transactionInfo = message.payload
 
@@ -138,8 +129,7 @@ class TransactionService(
 
                     is AddLiquidityPayloadOp -> {
                         logger.debug { "processing add liquidity $inMsgInnerOp" }
-                        addLiquiditiyProcessor.process(blockId to (inMsgOp.sender to exchangePair))
-                            .let { fetchLiquidityProcessor.process(blockId to it) }
+                        fetchLiquidityProcessor.process(blockId to (inMsgOp.sender to exchangePair))
                             .let { liquidityRepository.save(it) }
                     }
 
@@ -149,17 +139,7 @@ class TransactionService(
 
             is BurnNotificationOp -> {
                 logger.debug { "processing burn notification $inMsgOp" }
-                liquidityRepository.findByAddress(inMsgInfo.src).orElse(
-                    Liquidity(
-                        address = inMsgInfo.src,
-                        owner = inMsgOp.sender,
-                        exchangePair = exchangePair,
-                        balance = BigInteger.ZERO,
-                        block = blockId,
-                        timestamp = Instant.now(),
-                    )
-                )
-                    .let { fetchLiquidityProcessor.process(blockId to it) }
+                fetchLiquidityProcessor.process(blockId to (inMsgOp.sender to exchangePair))
                     .let { liquidityRepository.save(it) }
             }
 

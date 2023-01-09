@@ -10,33 +10,29 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "liquidity")
-@Table(
-    uniqueConstraints = [
-        UniqueConstraint(columnNames = ["owner", "exchange_pair"])
-    ]
-)
+@Table
 open class Liquidity(
     @Convert(converter = MsgAddressConverter::class)
-    @Column(name = "address", nullable = false, unique = true, columnDefinition = "BYTEA")
+    @Column(name = "address", nullable = false, columnDefinition = "BYTEA")
     open val address: MsgAddress,
 
     @Convert(converter = MsgAddressConverter::class)
     @Column(name = "owner", nullable = false, columnDefinition = "BYTEA")
-    open var owner: MsgAddress,
+    open val owner: MsgAddress,
 
     @Convert(converter = MsgAddressConverter::class)
     @Column(name = "exchange_pair", nullable = false, columnDefinition = "BYTEA")
-    open var exchangePair: MsgAddress,
+    open val exchangePair: MsgAddress,
 
     @Column(name = "balance", nullable = false, columnDefinition = "NUMERIC")
-    open var balance: BigInteger,
+    open val balance: BigInteger,
 
     @Convert(converter = TonNodeBlockIdExtConverter::class)
     @Column(name = "block", nullable = false, columnDefinition = "TEXT")
-    open var block: TonNodeBlockIdExt,
+    open val block: TonNodeBlockIdExt,
 
     @Column(name = "timestamp", nullable = false, columnDefinition = "TIMESTAMPTZ")
-    open var timestamp: Instant = Instant.now(),
+    open val timestamp: Instant = Instant.now(),
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
