@@ -14,6 +14,8 @@ private object OpCombinator : TlbCombinator<Op>() {
             TransferOp.tlbCodec(), TransferNotificationOp.tlbCodec(), ExcessesOp.tlbCodec(),
             BurnOp.tlbCodec(), BurnNotificationOp.tlbCodec(), SwapTonOp.tlbCodec(),
             SuccessfulSwapOp.tlbCodec(), InternalTransferOp.tlbCodec(),
+            InsufficientLeftAmountErrorOp.tlbCodec(), InsufficientRightAmountErrorOp.tlbCodec(),
+            InsufficientLiquidityErrorOp.tlbCodec(), InsufficientSlippageErrorOp.tlbCodec(),
         )
 
     override fun getConstructor(value: Op): TlbConstructor<out Op> = when (value) {
@@ -25,5 +27,9 @@ private object OpCombinator : TlbCombinator<Op>() {
         is SwapTonOp -> SwapTonOp.tlbCodec()
         is SuccessfulSwapOp -> SuccessfulSwapOp.tlbCodec()
         is InternalTransferOp -> InternalTransferOp.tlbCodec()
+        is InsufficientLeftAmountErrorOp -> InsufficientLeftAmountErrorOp.tlbCodec()
+        is InsufficientRightAmountErrorOp -> InsufficientRightAmountErrorOp.tlbCodec()
+        is InsufficientLiquidityErrorOp -> InsufficientLiquidityErrorOp.tlbCodec()
+        is InsufficientSlippageErrorOp -> InsufficientSlippageErrorOp.tlbCodec()
     }
 }
