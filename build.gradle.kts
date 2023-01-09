@@ -4,6 +4,7 @@ plugins {
     id("org.springframework.boot") version "2.7.7"
     id("io.spring.dependency-management") version "1.0.15.RELEASE"
     kotlin("jvm") version "1.7.22"
+    kotlin("kapt") version "1.7.22"
     kotlin("plugin.spring") version "1.7.22"
     kotlin("plugin.jpa") version "1.7.22"
     kotlin("plugin.serialization") version "1.7.22"
@@ -41,8 +42,9 @@ dependencies {
     implementation("org.ton:ton-kotlin:0.1.1")
     implementation("io.awspring.cloud:spring-cloud-starter-aws-messaging:2.4.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
-    implementation("org.modelmapper:modelmapper:3.1.1")
-    implementation("org.modelmapper.extensions:modelmapper-spring:3.1.0")
+    implementation("org.mapstruct:mapstruct:1.5.3.Final")
+    implementation("org.apache.tika:tika-core:2.6.0")
+    kapt("org.mapstruct:mapstruct-processor:1.5.3.Final")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     runtimeOnly("org.postgresql:postgresql")

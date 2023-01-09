@@ -3,10 +3,11 @@ package finance.tegro.api.dto
 import org.ton.block.MsgAddress
 import java.math.BigInteger
 import java.time.Instant
+import java.util.*
 
 data class TokenDTO(
+    val id: UUID,
     val address: MsgAddress,
-    val approved: Boolean,
     val timestamp: Instant,
 
     val totalSupply: BigInteger,

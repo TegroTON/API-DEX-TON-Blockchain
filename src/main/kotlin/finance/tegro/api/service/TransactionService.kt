@@ -6,10 +6,8 @@ import finance.tegro.api.entity.Swap
 import finance.tegro.api.loadTransaction
 import finance.tegro.api.processor.FetchLiquidityProcessor
 import finance.tegro.api.processor.FetchReserveProcessor
-import finance.tegro.api.repository.ExchangePairRepository
-import finance.tegro.api.repository.LiquidityRepository
-import finance.tegro.api.repository.ReserveRepository
-import finance.tegro.api.repository.SwapRepository
+import finance.tegro.api.processor.FetchTokenContractProcessor
+import finance.tegro.api.repository.*
 import io.awspring.cloud.messaging.listener.annotation.SqsListener
 import mu.KLogging
 import org.springframework.messaging.Message
@@ -27,9 +25,11 @@ class TransactionService(
     private val liquidityRepository: LiquidityRepository,
     private val reserveRepository: ReserveRepository,
     private val swapRepository: SwapRepository,
+    private val tokenContractRepository: TokenContractRepository,
 
     private val fetchReserveProcessor: FetchReserveProcessor,
     private val fetchLiquidityProcessor: FetchLiquidityProcessor,
+    private val fetchTokenContractProcessor: FetchTokenContractProcessor,
 ) {
     @SqsListener("transactions-test")
     fun onTransaction(message: Message<LiteServerTransactionInfo>) {
@@ -131,6 +131,10 @@ class TransactionService(
                         logger.debug { "processing add liquidity $inMsgInnerOp" }
                         fetchLiquidityProcessor.process(blockId to (inMsgOp.sender to exchangePair))
                             .let { liquidityRepository.save(it) }
+
+                        // Update total supply
+                        fetchTokenContractProcessor.process(blockId to exchangePair)
+                            .let { tokenContractRepository.save(it) }
                     }
 
                     else -> return
@@ -141,6 +145,10 @@ class TransactionService(
                 logger.debug { "processing burn notification $inMsgOp" }
                 fetchLiquidityProcessor.process(blockId to (inMsgOp.sender to exchangePair))
                     .let { liquidityRepository.save(it) }
+                
+                // Update total supply
+                fetchTokenContractProcessor.process(blockId to exchangePair)
+                    .let { tokenContractRepository.save(it) }
             }
 
             else -> {

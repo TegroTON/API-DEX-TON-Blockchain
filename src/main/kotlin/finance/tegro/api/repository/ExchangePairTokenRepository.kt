@@ -9,4 +9,5 @@ import java.util.*
 @Repository
 interface ExchangePairTokenRepository : JpaRepository<ExchangePairToken, UUID> {
     fun findByAddress(address: MsgAddress): Optional<ExchangePairToken>
+    fun findByBaseAndQuote(base: MsgAddress, quote: MsgAddress): Optional<ExchangePairToken>
 }

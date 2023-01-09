@@ -10,7 +10,11 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "exchange_pair_token")
-@Table(name = "exchange_pair_tokens")
+@Table(
+    name = "exchange_pair_tokens", uniqueConstraints = [
+        UniqueConstraint(columnNames = ["base", "quote"])
+    ]
+)
 open class ExchangePairToken(
     @NaturalId
     @Convert(converter = MsgAddressConverter::class)

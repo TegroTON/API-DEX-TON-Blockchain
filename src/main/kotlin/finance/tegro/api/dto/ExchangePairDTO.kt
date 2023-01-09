@@ -6,21 +6,17 @@ import java.time.Instant
 import java.util.*
 
 data class ExchangePairDTO(
-    val id: UUID,
-    val address: MsgAddress,
-    val approved: Boolean,
-    val timestamp: Instant,
+    var id: UUID,
+    var address: MsgAddress,
+    var timestamp: Instant,
 
-    val admin: MsgAddress,
-    val adminTimestamp: Instant,
+    var tokenBase: MsgAddress,
+    var tokenQuote: MsgAddress,
+    var tokenTimestamp: Instant,
 
-    val tokenBase: MsgAddress,
-    val tokenQuote: MsgAddress,
-    val tokenTimestamp: Instant,
-
-    val reserveBase: BigInteger,
-    val reserveQuote: BigInteger,
-    val reserveTimestamp: Instant,
+    var reserveBase: BigInteger,
+    var reserveQuote: BigInteger,
+    var reserveTimestamp: Instant,
 ) {
     fun inverse() = copy(
         tokenBase = tokenQuote,

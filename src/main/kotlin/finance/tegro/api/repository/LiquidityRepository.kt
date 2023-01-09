@@ -8,7 +8,8 @@ import java.util.*
 
 @Repository
 interface LiquidityRepository : JpaRepository<Liquidity, UUID> {
-    fun findByAddress(address: MsgAddress): Optional<Liquidity>
-    fun findByOwner(owner: MsgAddress): List<Liquidity>
-    fun findByOwnerAndExchangePair(owner: MsgAddress, exchangePair: MsgAddress): Optional<Liquidity>
+    fun findTopByOwnerAndExchangePairOrderByTimestampDesc(
+        owner: MsgAddress,
+        exchangePair: MsgAddress
+    ): Optional<Liquidity>
 }
