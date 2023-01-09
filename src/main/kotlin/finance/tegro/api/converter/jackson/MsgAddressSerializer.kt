@@ -8,6 +8,6 @@ import org.ton.block.MsgAddress
 
 class MsgAddressSerializer : StdSerializer<MsgAddress>(MsgAddress::class.java) {
     override fun serialize(value: MsgAddress, gen: JsonGenerator, provider: SerializerProvider?) {
-        gen.writeString(value.toSafeString())
+        value.toSafeString()?.let { gen.writeString(it) } ?: gen.writeNull()
     }
 }

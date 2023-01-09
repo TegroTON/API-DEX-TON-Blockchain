@@ -11,7 +11,7 @@ import org.ton.block.MsgAddress
 class ConverterConfiguration {
     @Bean
     fun msgAddressToStringConverter() = object : Converter<MsgAddress, String> {
-        override fun convert(source: MsgAddress): String = source.toSafeString()
+        override fun convert(source: MsgAddress): String? = source.toSafeString()
     }
 
     @Bean

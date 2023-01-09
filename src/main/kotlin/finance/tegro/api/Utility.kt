@@ -13,14 +13,14 @@ fun LiteServerTransactionInfo.loadTransaction(): Transaction =
     BagOfCells(this.transaction).roots.first().parse { loadTlb(Transaction) }
 
 fun MsgAddress.toSafeString() = when (this) {
-    is AddrNone -> "none"
+    is AddrNone -> null
     is AddrStd -> this.toString(userFriendly = true, urlSafe = true, bounceable = true, testOnly = false)
     else -> BagOfCells(CellBuilder.createCell { storeTlb(MsgAddress, this@toSafeString) }).toByteArray().encodeHex()
 }
 
 fun String?.toMsgAddress(): MsgAddress {
     if (this == null) return AddrNone
-    if (this.lowercase().trim() == "none") return AddrNone
+    if (this.lowercase().trim() == "null" || this.lowercase().trim() == "none") return AddrNone
 
     return try {
         MsgAddressInt(this) // Try parsing simple address
