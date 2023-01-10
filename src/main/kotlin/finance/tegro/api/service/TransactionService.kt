@@ -89,7 +89,7 @@ class TransactionService(
                 swapRepository.save(
                     Swap(
                         destination = outMsgInfo.dest,
-                        baseAmount = inMsgInfo.value.coins.amount.value,
+                        baseAmount = inMsgInfo.value.coins.amount.value - outMsgInfo.value.coins.amount.value,
                         exchangePair = exchangePair,
                         quoteAmount = outMsgOp.amount.value,
                         inverse = false, // Base (TON) -> Quote (Token) swap
@@ -114,7 +114,7 @@ class TransactionService(
                         swapRepository.save(
                             Swap(
                                 destination = outMsgInfo.dest,
-                                baseAmount = outMsgInfo.value.coins.amount.value,
+                                baseAmount = outMsgInfo.value.coins.amount.value - inMsgInfo.value.coins.amount.value,
                                 exchangePair = exchangePair,
                                 quoteAmount = inMsgOp.amount.value,
                                 inverse = true, // Quote (Token) -> Base (TON) swap
@@ -145,7 +145,7 @@ class TransactionService(
                 logger.debug { "processing burn notification $inMsgOp" }
                 fetchLiquidityProcessor.process(blockId to (inMsgOp.sender to exchangePair))
                     .let { liquidityRepository.save(it) }
-                
+
                 // Update total supply
                 fetchTokenContractProcessor.process(blockId to exchangePair)
                     .let { tokenContractRepository.save(it) }
