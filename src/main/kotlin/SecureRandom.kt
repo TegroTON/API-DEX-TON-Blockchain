@@ -1,3 +1,5 @@
+package org.ton.crypto
+
 import kotlin.random.Random
 
 object SecureRandom : Random() {
