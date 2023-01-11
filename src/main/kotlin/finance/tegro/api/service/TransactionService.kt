@@ -31,7 +31,7 @@ class TransactionService(
     private val fetchLiquidityProcessor: FetchLiquidityProcessor,
     private val fetchTokenContractProcessor: FetchTokenContractProcessor,
 ) {
-    @SqsListener("transactions-test")
+    @SqsListener("transactions")
     fun onTransaction(message: Message<LiteServerTransactionInfo>) {
         val transactionInfo = message.payload
 
