@@ -10,4 +10,13 @@ import java.time.Duration
 data class BlockIdServiceProperties(
     @DefaultValue("PT1S")
     val pollRate: Duration,
+
+    @DefaultValue("PT1H")
+    val catchUpRate: Duration,
+
+    @DefaultValue("26205420")
+    val catchUpStartSeqno: Int,
+
+    @DefaultValue("65536")
+    val catchUpStep: Int,
 )

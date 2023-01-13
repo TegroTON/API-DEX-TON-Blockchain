@@ -4,10 +4,7 @@ import finance.tegro.core.repository.BlockIdRepository
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import mu.KLogging
 import org.springframework.stereotype.Service
@@ -17,10 +14,11 @@ import java.time.Instant
 @Service
 class MasterchainBlockService(
     private val masterchainBlockIdService: MasterchainBlockIdService,
+    private val masterchainCatchUpBlockIdService: MasterchainCatchUpBlockIdService,
     private val liteClient: LiteClient,
     private val blockIdRepository: BlockIdRepository,
 ) {
-    val data = masterchainBlockIdService.data
+    val data = merge(masterchainBlockIdService.data, masterchainCatchUpBlockIdService.data)
         .mapNotNull { id ->
             try {
                 liteClient.getBlock(id.toTonNodeBlockIdExt())?.let { id to it } // TODO: Retries

@@ -13,9 +13,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-  batch:
-    jdbc:
-      initialize-schema: always
+
 logging:
   level:
     finance.tegro: DEBUG
