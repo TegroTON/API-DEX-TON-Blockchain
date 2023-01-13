@@ -1,0 +1,73 @@
+name: Docker Image
+
+on:
+  push:
+    branches: [ master ]
+    tags:
+      - "v*.*.*"
+
+env:
+  REGISTRY: cr.yandex/crpj359s4d2stuu9d49c
+
+jobs:
+  observer:
+    env:
+      IMAGE: finance_api/observer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: corretto
+          java-version: 17
+
+      - name: Ensure gradlew is executable
+        run: chmod +x ./gradlew
+
+      - name: Build image with gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: observer:bootBuildImage --imageName=${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }}
+
+      - name: Login to Yandex Cloud Container Registry
+        id: login-cr
+        uses: yc-actions/yc-cr-login@v1
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+
+      - name: Push to Yandex Cloud Container Registry
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }}  
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }} ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
+
+  rest:
+    env:
+      IMAGE: finance_api/observer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: corretto
+          java-version: 17
+
+      - name: Ensure gradlew is executable
+        run: chmod +x ./gradlew
+
+      - name: Build image with gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: rest:bootBuildImage --imageName=${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }}
+
+      - name: Login to Yandex Cloud Container Registry
+        id: login-cr
+        uses: yc-actions/yc-cr-login@v1
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+
+      - name: Push to Yandex Cloud Container Registry
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }}  
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }} ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
