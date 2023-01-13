@@ -16,22 +16,22 @@ import org.ton.lite.client.LiteClient
 import java.time.Instant
 
 @Service
-class MasterchainBlockService(
-    private val masterchainBlockIdService: MasterchainBlockIdService,
+class CatchUpShardchainBlockService(
+    private val catchUpShardchainBlockIdService: CatchUpShardchainBlockIdService,
     private val liteClient: LiteClient,
     private val blockIdRepository: BlockIdRepository,
 ) {
-    val data = masterchainBlockIdService.data
+    val data = catchUpShardchainBlockIdService.data
         .mapNotNull { id ->
             try {
                 liteClient.getBlock(id)?.let { id to it } // TODO: Retries
             } catch (e: Exception) {
-                logger.warn(e) { "couldn't get masterchain block seqno=${id.seqno}" }
+                logger.warn(e) { "couldn't get old shardchain workchain=${id.workchain} block seqno=${id.seqno}" }
                 null
             }
         }
         .map { (id, block) ->
-            logger.debug { "masterchain block seqno=${id.seqno}" }
+            logger.debug { "old shardchain workchain=${id.workchain} block seqno=${id.seqno}" }
             withContext(Dispatchers.IO) {
                 blockIdRepository.save(
                     BlockId(
@@ -41,7 +41,7 @@ class MasterchainBlockService(
                 )
             } to block
         }
-        .shareIn(CoroutineScope(Dispatchers.IO + CoroutineName("MasterchainBlockService")), SharingStarted.Eagerly, 256)
+        .shareIn(CoroutineScope(Dispatchers.IO + CoroutineName("ShardchainBlockService")), SharingStarted.Eagerly, 256)
 
     companion object : KLogging()
 }

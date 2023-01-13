@@ -12,7 +12,7 @@ import org.ton.api.tonnode.TonNodeBlockId
 import org.ton.lite.client.LiteClient
 
 @Service
-class MasterchainCatchUpBlockIdService(
+class CatchUpMasterchainBlockIdService(
     private val liteClient: LiteClient,
 
     private val blockIdRepository: BlockIdRepository,
@@ -44,7 +44,7 @@ class MasterchainCatchUpBlockIdService(
         .flowOn(Dispatchers.IO)
         .onEach { logger.trace { "old masterchain block id seqno=${it.seqno}" } }
         .shareIn(
-            CoroutineScope(Dispatchers.IO + CoroutineName("MasterchainCatchUpBlockIdService")),
+            CoroutineScope(Dispatchers.IO + CoroutineName("CatchUpMasterchainBlockIdService")),
             SharingStarted.Eagerly,
             256
         )
