@@ -24,8 +24,8 @@ open class BlockId(
     @Column(name = "file_hash", nullable = false, columnDefinition = "BYTEA")
     open val fileHash: ByteArray,
 
-    @Column(name = "timestamp", columnDefinition = "TIMESTAMPTZ")
-    open var timestamp: Instant? = null,
+    @Column(name = "timestamp", nullable = false, columnDefinition = "TIMESTAMPTZ")
+    open var timestamp: Instant,
 ) : TonNodeBlockId {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,12 +34,14 @@ open class BlockId(
 
     constructor(
         id: TonNodeBlockIdExt,
+        instant: Instant,
     ) : this(
         id.workchain,
         id.shard,
         id.seqno,
         id.root_hash,
         id.file_hash,
+        instant,
     )
 
     fun toTonNodeBlockIdExt(): TonNodeBlockIdExt = TonNodeBlockIdExt(workchain, shard, seqno, rootHash, fileHash)

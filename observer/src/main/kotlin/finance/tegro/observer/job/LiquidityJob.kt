@@ -9,8 +9,7 @@ import finance.tegro.core.repository.LiquidityRepository
 import finance.tegro.core.toSafeString
 import kotlinx.coroutines.runBlocking
 import mu.KLogging
-import org.quartz.Job
-import org.quartz.JobExecutionContext
+import org.quartz.*
 import org.springframework.stereotype.Component
 import org.ton.block.AddrStd
 import org.ton.block.MsgAddress
@@ -19,6 +18,7 @@ import java.time.Instant
 
 @Component
 class LiquidityJob(
+    private val scheduler: Scheduler,
     private val liteClient: LiteClient,
 
     private val liquidityRepository: LiquidityRepository,
@@ -59,6 +59,31 @@ class LiquidityJob(
         ).also {
             logger.debug { "Liquidity ${it.address.toSafeString()} ${it.balance}LP of ${it.exchangePairAddress.toSafeString()} was created" }
         }
+
+        // Trigger liquidity token update
+        val tokenJobKey = JobKey("TokenJob_${wallet.jetton.toSafeString()}_${blockId.id}", "TokenJob")
+
+        if (!scheduler.checkExists(tokenJobKey))
+            scheduler.scheduleJob(
+                JobBuilder.newJob(TokenJob::class.java)
+                    .withIdentity(tokenJobKey)
+                    .usingJobData(
+                        JobDataMap(
+                            mapOf(
+                                "address" to wallet.jetton,
+                                "blockId" to blockId,
+                            )
+                        )
+                    )
+                    .build(),
+                TriggerBuilder.newTrigger()
+                    .withIdentity(
+                        "TokenTrigger_${wallet.jetton.toSafeString()}_${blockId.id}",
+                        "TokenTrigger"
+                    )
+                    .startNow()
+                    .build()
+            )
     }
 
     companion object : KLogging()

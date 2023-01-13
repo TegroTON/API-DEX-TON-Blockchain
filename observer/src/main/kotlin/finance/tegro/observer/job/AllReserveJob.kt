@@ -15,7 +15,7 @@ class AllReserveJob(
     private val exchangePairRepository: ExchangePairRepository,
 ) : Job {
     override fun execute(context: JobExecutionContext) {
-        val blockId = blockIdRepository.findTopByWorkchainOrderBySeqno(-1).orElse(null) ?: return
+        val blockId = blockIdRepository.findFirstByWorkchainOrderByTimestampDesc(-1).orElse(null) ?: return
         logger.debug { "started for blockId ${blockId.workchain}:${blockId.shard}:${blockId.seqno}" }
 
         for (exchangePair in exchangePairRepository.findAll()) {

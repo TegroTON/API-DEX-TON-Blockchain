@@ -1,6 +1,5 @@
 package finance.tegro.observer.service
 
-import finance.tegro.core.entity.BlockId
 import finance.tegro.core.repository.BlockIdRepository
 import finance.tegro.observer.properties.BlockIdServiceProperties
 import kotlinx.coroutines.*
@@ -29,7 +28,6 @@ class MasterchainBlockIdService(
     }
         .distinctUntilChanged()
         .filterNot { blockIdRepository.existsByWorkchainAndShardAndSeqno(it.workchain, it.shard, it.seqno) }
-        .map { blockIdRepository.save(BlockId(it)) }
         .flowOn(Dispatchers.IO)
         .onEach { logger.trace { "latest masterchain block seqno=${it.seqno}" } }
         .shareIn(

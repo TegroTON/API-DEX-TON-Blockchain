@@ -11,12 +11,12 @@ data class BlockIdServiceProperties(
     @DefaultValue("PT1S")
     val pollRate: Duration,
 
-    @DefaultValue("PT1H")
+    @DefaultValue("PT1M")
     val catchUpRate: Duration,
 
     @DefaultValue("26205420")
     val catchUpStartSeqno: Int,
 
-    @DefaultValue("65536")
+    @DefaultValue("128")
     val catchUpStep: Int,
 )

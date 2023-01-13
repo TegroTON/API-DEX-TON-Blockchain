@@ -91,6 +91,28 @@ class TokenContractJob(
                     .startNow()
                     .build()
             )
+
+        val tokenSupplyJobKey =
+            JobKey("TokenSupplyJob_${tokenContract.address.toSafeString()}_${blockId.id}", "TokenSupplyJob")
+
+        if (!scheduler.checkExists(tokenSupplyJobKey))
+            scheduler.scheduleJob(
+                JobBuilder.newJob(TokenSupplyJob::class.java)
+                    .withIdentity(tokenSupplyJobKey)
+                    .usingJobData(
+                        JobDataMap(
+                            mapOf(
+                                "address" to tokenContract.address,
+                                "blockId" to blockId
+                            )
+                        )
+                    )
+                    .build(),
+                TriggerBuilder.newTrigger()
+                    .withIdentity("TokenSupplyTrigger_${tokenContract.address.toSafeString()}_${blockId.id}")
+                    .startNow()
+                    .build()
+            )
     }
 
     companion object : KLogging()

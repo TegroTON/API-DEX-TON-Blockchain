@@ -15,7 +15,7 @@ class AllTokenJob(
     private val tokenRepository: TokenRepository,
 ) : Job {
     override fun execute(context: JobExecutionContext) {
-        val blockId = blockIdRepository.findTopByWorkchainOrderBySeqno(-1).orElse(null) ?: return
+        val blockId = blockIdRepository.findFirstByWorkchainOrderByTimestampDesc(-1).orElse(null) ?: return
         logger.debug { "started for blockId ${blockId.workchain}:${blockId.shard}:${blockId.seqno}" }
 
         for (token in tokenRepository.findAll()) {

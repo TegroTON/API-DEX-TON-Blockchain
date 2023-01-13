@@ -1,12 +1,13 @@
 package finance.tegro.observer.service
 
+import finance.tegro.core.entity.BlockId
 import finance.tegro.core.repository.BlockIdRepository
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.withContext
 import mu.KLogging
@@ -23,22 +24,22 @@ class ShardchainBlockService(
     val data = shardchainBlockIdService.data
         .mapNotNull { id ->
             try {
-                liteClient.getBlock(id.toTonNodeBlockIdExt())?.let { id to it } // TODO: Retries
+                liteClient.getBlock(id)?.let { id to it } // TODO: Retries
             } catch (e: Exception) {
                 logger.warn(e) { "couldn't get shardchain workchain=${id.workchain} block seqno=${id.seqno}" }
                 null
             }
         }
-        .onEach { (id, block) ->
+        .map { (id, block) ->
             logger.debug { "shardchain workchain=${id.workchain} block seqno=${id.seqno}" }
             withContext(Dispatchers.IO) {
-                blockIdRepository.updateTimestampByWorkchainAndShardAndSeqno(
-                    Instant.ofEpochSecond(block.info.gen_utime.toLong()),
-                    id.workchain,
-                    id.shard,
-                    id.seqno
+                blockIdRepository.save(
+                    BlockId(
+                        id,
+                        Instant.ofEpochSecond(block.info.gen_utime.toLong())
+                    )
                 )
-            }
+            } to block
         }
         .shareIn(CoroutineScope(Dispatchers.IO + CoroutineName("ShardchainBlockService")), SharingStarted.Eagerly, 256)
 

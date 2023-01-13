@@ -1,11 +1,11 @@
 package finance.tegro.observer.service
 
-import finance.tegro.core.entity.BlockId
 import finance.tegro.core.repository.BlockIdRepository
 import finance.tegro.observer.properties.BlockIdServiceProperties
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.time.delay
+import mu.KLogging
 import org.springframework.stereotype.Service
 import org.ton.api.tonnode.Shard
 import org.ton.api.tonnode.TonNodeBlockId
@@ -36,17 +36,18 @@ class MasterchainCatchUpBlockIdService(
             try {
                 liteClient.lookupBlock(id) // TODO: Retries
             } catch (e: Exception) {
-                ShardchainBlockIdService.logger.warn(e) { "couldn't get old masterchain block id seqno=${id.seqno}" }
+                logger.warn(e) { "couldn't get old masterchain block id seqno=${id.seqno}" }
                 null
             }
         }
-        .map { blockIdRepository.save(BlockId(it)) }
+        .filterNot { blockIdRepository.existsByWorkchainAndShardAndSeqno(it.workchain, it.shard, it.seqno) }
         .flowOn(Dispatchers.IO)
-        .onEach { ShardchainBlockIdService.logger.trace { "latest workchain=${it.workchain} block seqno=${it.seqno}" } }
+        .onEach { logger.trace { "old masterchain block id seqno=${it.seqno}" } }
         .shareIn(
             CoroutineScope(Dispatchers.IO + CoroutineName("MasterchainCatchUpBlockIdService")),
             SharingStarted.Eagerly,
             256
         )
 
+    companion object : KLogging()
 }

@@ -2,10 +2,7 @@ package finance.tegro.observer.service
 
 import finance.tegro.core.entity.BlockId
 import finance.tegro.core.repository.BlockIdRepository
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import mu.KLogging
 import org.springframework.stereotype.Service
@@ -29,7 +26,6 @@ class ShardchainBlockIdService(
         .flatMapConcat(::getShardchainBlockIds)
         .distinctUntilChanged()
         .filterNot { blockIdRepository.existsByWorkchainAndShardAndSeqno(it.workchain, it.shard, it.seqno) }
-        .map { blockIdRepository.save(BlockId(it)) }
         .flowOn(Dispatchers.IO)
         .onEach { logger.trace { "latest workchain=${it.workchain} block seqno=${it.seqno}" } }
         .shareIn(

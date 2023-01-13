@@ -20,6 +20,6 @@ logging:
     finance.tegro.core.TonLogger: INFO
 
 lite.client:
-  ip: 84478479
-  port: 48014
-  key: "3XO67K/qi+gu3T9v8G2hx1yNmWZhccL3O7SoosFo8G0="
+  ip: -1182143975
+  port: 36573
+  key: "ZYe6sDZZc63sH3JnpIS8Yj86NFGnRlQF9NOvzl6UM0c="

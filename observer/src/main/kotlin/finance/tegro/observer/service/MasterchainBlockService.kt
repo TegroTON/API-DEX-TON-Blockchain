@@ -1,5 +1,6 @@
 package finance.tegro.observer.service
 
+import finance.tegro.core.entity.BlockId
 import finance.tegro.core.repository.BlockIdRepository
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -21,22 +22,22 @@ class MasterchainBlockService(
     val data = merge(masterchainBlockIdService.data, masterchainCatchUpBlockIdService.data)
         .mapNotNull { id ->
             try {
-                liteClient.getBlock(id.toTonNodeBlockIdExt())?.let { id to it } // TODO: Retries
+                liteClient.getBlock(id)?.let { id to it } // TODO: Retries
             } catch (e: Exception) {
                 logger.warn(e) { "couldn't get masterchain block seqno=${id.seqno}" }
                 null
             }
         }
-        .onEach { (id, block) ->
+        .map { (id, block) ->
             logger.debug { "masterchain block seqno=${id.seqno}" }
             withContext(Dispatchers.IO) {
-                blockIdRepository.updateTimestampByWorkchainAndShardAndSeqno(
-                    Instant.ofEpochSecond(block.info.gen_utime.toLong()),
-                    id.workchain,
-                    id.shard,
-                    id.seqno
+                blockIdRepository.save(
+                    BlockId(
+                        id,
+                        Instant.ofEpochSecond(block.info.gen_utime.toLong())
+                    )
                 )
-            }
+            } to block
         }
         .shareIn(CoroutineScope(Dispatchers.IO + CoroutineName("MasterchainBlockService")), SharingStarted.Eagerly, 256)
 
