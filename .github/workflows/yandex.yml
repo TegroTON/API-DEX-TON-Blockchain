@@ -43,7 +43,7 @@ jobs:
 
   rest:
     env:
-      IMAGE: finance_api/observer
+      IMAGE: finance_api/rest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
