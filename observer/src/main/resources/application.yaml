@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: observer
+  main:
+    banner-mode: off
+    web-application-type: none
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/finance
+    username: postgres
+    password: postgrespw
+    type: com.zaxxer.hikari.HikariDataSource
+  jpa:
+    hibernate:
+      ddl-auto: update
+  batch:
+    jdbc:
+      initialize-schema: always
+logging:
+  level:
+    finance.tegro: DEBUG
+    finance.tegro.core.TonLogger: INFO
+
+lite.client:
+  ip: 84478479
+  port: 48014
+  key: "3XO67K/qi+gu3T9v8G2hx1yNmWZhccL3O7SoosFo8G0="

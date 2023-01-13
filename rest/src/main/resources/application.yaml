@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: rest
+  main:
+    banner-mode: off
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/finance
+    username: postgres
+    password: postgrespw
+    type: com.zaxxer.hikari.HikariDataSource
+  jpa:
+    hibernate:
+      ddl-auto: update
+  batch:
+    jdbc:
+      initialize-schema: always
+
+logging:
+  level:
+    finance.tegro: DEBUG
