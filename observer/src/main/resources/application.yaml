@@ -10,10 +10,7 @@ spring:
     username: postgres
     password: postgrespw
     type: com.zaxxer.hikari.HikariDataSource
-  jpa:
-    hibernate:
-      ddl-auto: update
-
+    
 logging:
   level:
     finance.tegro: DEBUG
