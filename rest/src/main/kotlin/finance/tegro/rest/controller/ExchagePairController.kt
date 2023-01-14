@@ -8,10 +8,12 @@ import finance.tegro.rest.dto.ExchangePairDTO
 import finance.tegro.rest.mapper.EntityMapper
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.ton.block.MsgAddress
 
 @RestController
+@RequestMapping("/v1/pair")
 class ExchagePairController(
     private val entityMapper: EntityMapper,
 
@@ -19,7 +21,7 @@ class ExchagePairController(
     private val exchangePairTokenRepository: ExchangePairTokenRepository,
     private val reserveRepository: ReserveRepository,
 ) {
-    @GetMapping("/pair")
+    @GetMapping
     fun getAllPairs(): List<ExchangePairDTO> =
         exchangePairRepository.findAll()
             .mapNotNull {
@@ -30,7 +32,7 @@ class ExchagePairController(
                 }
             }
 
-    @GetMapping("/pair/{address}")
+    @GetMapping("/{address}")
     fun getPairByAddress(@PathVariable address: MsgAddress): ExchangePairDTO {
         val exchangePair = exchangePairRepository.findByAddress(address)
             .orElseThrow { throw IllegalArgumentException("Exchange pair ${address.toSafeString()} not found") }
@@ -40,7 +42,7 @@ class ExchagePairController(
         return entityMapper.toDTO(exchangePair, reserve)
     }
 
-    @GetMapping("/pair/token/{base}/{quote}")
+    @GetMapping("/token/{base}/{quote}")
     fun getPairByTokenAddresses(@PathVariable base: MsgAddress, @PathVariable quote: MsgAddress): ExchangePairDTO =
         exchangePairTokenRepository.findByBaseAndQuote(base, quote).orElse(null)
             ?.let { return getPairByAddress(it.address) }

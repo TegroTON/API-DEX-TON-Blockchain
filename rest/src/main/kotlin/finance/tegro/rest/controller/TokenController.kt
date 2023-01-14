@@ -6,16 +6,18 @@ import finance.tegro.rest.dto.TokenDTO
 import finance.tegro.rest.mapper.EntityMapper
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.ton.block.MsgAddress
 
 @RestController
+@RequestMapping("/v1/token")
 class TokenController(
     private val entityMapper: EntityMapper,
 
     private val tokenRepository: TokenRepository,
 ) {
-    @GetMapping("/token")
+    @GetMapping
     fun getAllTokens(): List<TokenDTO> =
         tokenRepository.findAll()
             .mapNotNull {
@@ -26,7 +28,7 @@ class TokenController(
                 }
             }
 
-    @GetMapping("/token/{address}")
+    @GetMapping("/{address}")
     fun getTokenByAddress(@PathVariable address: MsgAddress): TokenDTO =
         tokenRepository.findByAddress(address)
             .orElseThrow { throw IllegalArgumentException("Token ${address.toSafeString()} not found") }
