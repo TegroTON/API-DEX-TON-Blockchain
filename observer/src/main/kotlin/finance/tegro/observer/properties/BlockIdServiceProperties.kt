@@ -14,7 +14,7 @@ data class BlockIdServiceProperties(
     @DefaultValue("PT1M")
     val catchUpRate: Duration,
 
-    @DefaultValue("26205420")
+    @DefaultValue("26208256")
     val catchUpStartSeqno: Int,
 
     @DefaultValue("128")
