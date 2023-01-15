@@ -40,23 +40,24 @@ class ExchangePairTokenJob(
             )
         }
 
-        val exchangePairToken = exchangePairTokenRepository.findByAddress(address).orElse(null)
+        val exchangePairToken = (exchangePairTokenRepository.findByAddress(address).orElse(null)
             ?.apply {
                 this.base = base
                 this.quote = quote
                 this.blockId = blockId
                 this.timestamp = Instant.now()
             }
-            ?: exchangePairTokenRepository.save(
-                ExchangePairToken(
-                    address,
-                    base,
-                    quote,
-                    blockId,
-                    Instant.now()
-                )
+            ?: ExchangePairToken(
+                address,
+                base,
+                quote,
+                blockId,
+                Instant.now()
             ).also {
                 logger.info { "ExchangePairToken ${it.address.toSafeString()} was created" }
+            })
+            .let {
+                exchangePairTokenRepository.save(it)
             }
 
         exchangePairRepository.updateTokenByAddress(exchangePairToken, exchangePairToken.address)

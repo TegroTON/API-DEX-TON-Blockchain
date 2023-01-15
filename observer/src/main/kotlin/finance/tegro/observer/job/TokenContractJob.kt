@@ -43,7 +43,7 @@ class TokenContractJob(
             JettonContract.ofTon()
         }
 
-        val tokenContract = tokenContractRepository.findByAddress(address).orElse(null)
+        val tokenContract = (tokenContractRepository.findByAddress(address).orElse(null)
             ?.apply {
                 this.totalSupply = contract.totalSupply
                 this.mintable = contract.mintable
@@ -53,19 +53,21 @@ class TokenContractJob(
                 this.blockId = blockId
                 this.timestamp = Instant.now()
             }
-            ?: tokenContractRepository.save(
-                TokenContract(
-                    address,
-                    contract.totalSupply,
-                    contract.mintable,
-                    contract.admin,
-                    contract.content,
-                    contract.walletCode,
-                    blockId,
-                    Instant.now()
-                )
-            ).also {
-                logger.info { "TokenContract ${it.address.toSafeString()} was created" }
+            ?: TokenContract(
+                address,
+                contract.totalSupply,
+                contract.mintable,
+                contract.admin,
+                contract.content,
+                contract.walletCode,
+                blockId,
+                Instant.now()
+            )
+                .also {
+                    logger.info { "TokenContract ${it.address.toSafeString()} was created" }
+                })
+            .let {
+                tokenContractRepository.save(it)
             }
 
         tokenRepository.updateContractByAddress(tokenContract, tokenContract.address)

@@ -40,21 +40,23 @@ class ExchangePairAdminJob(
             )
         }
 
-        val exchangePairAdmin = exchangePairAdminRepository.findByAddress(address).orElse(null)
-            ?.apply {
-                this.admin = admin
-                this.blockId = blockId
-                this.timestamp = Instant.now()
-            }
-            ?: exchangePairAdminRepository.save(
-                ExchangePairAdmin(
-                    address,
-                    admin,
-                    blockId,
-                    Instant.now()
-                )
-            ).also {
-                logger.info { "ExchangePairAdmin ${it.address.toSafeString()} was created" }
+        val exchangePairAdmin = (
+                exchangePairAdminRepository.findByAddress(address).orElse(null)
+                    ?.apply {
+                        this.admin = admin
+                        this.blockId = blockId
+                        this.timestamp = Instant.now()
+                    }
+                    ?: ExchangePairAdmin(
+                        address,
+                        admin,
+                        blockId,
+                        Instant.now()
+                    ).also {
+                        logger.info { "ExchangePairAdmin ${it.address.toSafeString()} was created" }
+                    })
+            .let {
+                exchangePairAdminRepository.save(it)
             }
 
         exchangePairRepository.updateAdminByAddress(exchangePairAdmin, exchangePairAdmin.address)

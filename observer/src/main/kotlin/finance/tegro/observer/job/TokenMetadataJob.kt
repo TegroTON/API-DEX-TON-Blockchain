@@ -51,7 +51,7 @@ class TokenMetadataJob(
             )
         }
 
-        val tokenMetadata = tokenMetadataRepository.findByAddress(address).orElse(null)
+        val tokenMetadata = (tokenMetadataRepository.findByAddress(address).orElse(null)
             ?.apply {
                 this.uri = metadata.uri
                 this.name = metadata.name
@@ -63,20 +63,21 @@ class TokenMetadataJob(
                 this.blockId = blockId
                 this.timestamp = Instant.now()
             }
-            ?: tokenMetadataRepository.save(
-                TokenMetadata(
-                    address,
-                    metadata.uri,
-                    metadata.name,
-                    metadata.description,
-                    metadata.image,
-                    metadata.imageData,
-                    metadata.symbol,
-                    metadata.decimals,
-                    blockId,
-                    Instant.now(),
-                )
-            ).also { logger.debug { "TokenMetadata ${it.address.toSafeString()} was created" } }
+            ?: TokenMetadata(
+                address,
+                metadata.uri,
+                metadata.name,
+                metadata.description,
+                metadata.image,
+                metadata.imageData,
+                metadata.symbol,
+                metadata.decimals,
+                blockId,
+                Instant.now(),
+            ).also { logger.debug { "TokenMetadata ${it.address.toSafeString()} was created" } })
+            .let {
+                tokenMetadataRepository.save(it)
+            }
 
         tokenRepository.updateMetadataByAddress(tokenMetadata, tokenMetadata.address)
     }
