@@ -7,7 +7,7 @@ import finance.tegro.core.repository.TokenContractRepository
 import finance.tegro.core.repository.TokenMetadataRepository
 import finance.tegro.core.repository.TokenRepository
 import finance.tegro.core.toSafeString
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import mu.KLogging
 import org.quartz.Job
 import org.quartz.JobExecutionContext
@@ -22,7 +22,7 @@ class TokenMetadataJob(
     private val tokenContractRepository: TokenContractRepository,
     private val tokenMetadataRepository: TokenMetadataRepository,
     private val tokenRepository: TokenRepository,
-) : Job {
+) : Job, CoroutineScope by CoroutineScope(Dispatchers.IO + CoroutineName("TokenMetadataJob")) {
     override fun execute(context: JobExecutionContext) {
         val jobData = context.mergedJobDataMap
         val address = jobData["address"] as MsgAddress
@@ -31,55 +31,60 @@ class TokenMetadataJob(
         logger.debug { "started for address ${address.toSafeString()} and blockId ${blockId.workchain}:${blockId.shard}:${blockId.seqno}" }
 
         val tokenContract = tokenContractRepository.findByAddress(address).orElse(null) ?: return
-        val metadata = if (address != AddrNone) {
-            runBlocking {
+
+        launch {
+            val metadata = if (address != AddrNone) {
                 JettonMetadata.of(
                     tokenContract.content,
                     WebClient.create(),
                 )
+            } else {
+                // TODO: Put default metadata into contract's content
+                JettonMetadata(
+                    uri = null,
+                    name = "Toncoin",
+                    description = "The native currency of the TON blockchain",
+                    image = "https://ton.org/download/ton_symbol.svg",
+                    imageData = null,
+                    symbol = "TON",
+                    decimals = 9,
+                )
             }
-        } else {
-            // TODO: Put default metadata into contract's content
-            JettonMetadata(
-                uri = null,
-                name = "Toncoin",
-                description = "The native currency of the TON blockchain",
-                image = "https://ton.org/download/ton_symbol.svg",
-                imageData = null,
-                symbol = "TON",
-                decimals = 9,
-            )
+
+            val tokenMetadata = (withContext(Dispatchers.IO) {
+                tokenMetadataRepository.findByAddress(address)
+            }.orElse(null)
+                ?.apply {
+                    this.uri = metadata.uri
+                    this.name = metadata.name
+                    this.description = metadata.description
+                    this.image = metadata.image
+                    this.imageData = metadata.imageData
+                    this.symbol = metadata.symbol
+                    this.decimals = metadata.decimals
+                    this.blockId = blockId
+                    this.timestamp = Instant.now()
+                }
+                ?: TokenMetadata(
+                    address,
+                    metadata.uri,
+                    metadata.name,
+                    metadata.description,
+                    metadata.image,
+                    metadata.imageData,
+                    metadata.symbol,
+                    metadata.decimals,
+                    blockId,
+                    Instant.now(),
+                ).also { logger.debug { "TokenMetadata ${it.address.toSafeString()} was created" } })
+                .let {
+                    tokenMetadataRepository.save(it)
+                }
+
+            withContext(Dispatchers.IO) {
+                tokenRepository.updateMetadataByAddress(tokenMetadata, tokenMetadata.address)
+            }
         }
-
-        val tokenMetadata = (tokenMetadataRepository.findByAddress(address).orElse(null)
-            ?.apply {
-                this.uri = metadata.uri
-                this.name = metadata.name
-                this.description = metadata.description
-                this.image = metadata.image
-                this.imageData = metadata.imageData
-                this.symbol = metadata.symbol
-                this.decimals = metadata.decimals
-                this.blockId = blockId
-                this.timestamp = Instant.now()
-            }
-            ?: TokenMetadata(
-                address,
-                metadata.uri,
-                metadata.name,
-                metadata.description,
-                metadata.image,
-                metadata.imageData,
-                metadata.symbol,
-                metadata.decimals,
-                blockId,
-                Instant.now(),
-            ).also { logger.debug { "TokenMetadata ${it.address.toSafeString()} was created" } })
-            .let {
-                tokenMetadataRepository.save(it)
-            }
-
-        tokenRepository.updateMetadataByAddress(tokenMetadata, tokenMetadata.address)
     }
 
     companion object : KLogging()

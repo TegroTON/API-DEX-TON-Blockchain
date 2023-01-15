@@ -6,7 +6,7 @@ import finance.tegro.core.entity.Reserve
 import finance.tegro.core.repository.ExchangePairRepository
 import finance.tegro.core.repository.ReserveRepository
 import finance.tegro.core.toSafeString
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import mu.KLogging
 import org.quartz.Job
 import org.quartz.JobExecutionContext
@@ -22,7 +22,7 @@ class ReserveJob(
 
     private val exchangePairRepository: ExchangePairRepository,
     private val reserveRepository: ReserveRepository,
-) : Job {
+) : Job, CoroutineScope by CoroutineScope(Dispatchers.IO + CoroutineName("ReserveJob")) {
     override fun execute(context: JobExecutionContext) {
         val jobData = context.mergedJobDataMap
         val address = jobData["address"] as MsgAddress
@@ -33,26 +33,28 @@ class ReserveJob(
         if (!exchangePairRepository.existsByAddress(address))
             return
 
-        val (base, quote) = runBlocking {
-            PairContract.getReserves(
+        launch {
+            val (base, quote) = PairContract.getReserves(
                 checkNotNull(address as? AddrStd) { "Reserve address is not valid" },
                 liteClient,
                 blockId.toTonNodeBlockIdExt()
             )
-        }
 
-        reserveRepository.save(
-            Reserve(
-                address,
-                base,
-                quote,
-                blockId,
-                Instant.now()
-            ).apply {
-                this.exchangePair = exchangePairRepository.findByAddress(address).orElse(null)
+            withContext(Dispatchers.IO) {
+                reserveRepository.save(
+                    Reserve(
+                        address,
+                        base,
+                        quote,
+                        blockId,
+                        Instant.now()
+                    ).apply {
+                        this.exchangePair = exchangePairRepository.findByAddress(address).orElse(null)
+                    }
+                )
+            }.also {
+                logger.debug { "Reserve ${it.address.toSafeString()}: ${it.base}/${it.quote} was added" }
             }
-        ).also {
-            logger.debug { "Reserve ${it.address.toSafeString()}: ${it.base}/${it.quote} was added" }
         }
     }
 
