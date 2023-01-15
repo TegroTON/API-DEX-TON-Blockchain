@@ -6,5 +6,5 @@ import org.ton.block.MsgAddress
 import java.util.*
 
 interface ReserveRepository : JpaRepository<Reserve, UUID> {
-    fun findFirstByExchangePairAddressOrderByBlockId_TimestampDesc(exchangePairAddress: MsgAddress): Optional<Reserve>
+    fun findFirstByAddressOrderByBlockId_TimestampDesc(exchangePairAddress: MsgAddress): Optional<Reserve>
 }

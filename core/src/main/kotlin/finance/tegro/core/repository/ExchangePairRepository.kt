@@ -23,4 +23,17 @@ interface ExchangePairRepository : JpaRepository<ExchangePair, UUID> {
     @Modifying
     @Query("update exchange_pair e set e.token = ?1, e.timestamp = now() where e.address = ?2")
     fun updateTokenByAddress(token: ExchangePairToken, address: MsgAddress)
+
+    @Query(
+        """
+            select e from exchange_pair e
+            where upper(e.token.baseToken.metadata.symbol) = upper(?1)
+             and upper(e.token.quoteToken.metadata.symbol) = upper(?2)
+         """
+    )
+    fun findByBaseAndQuoteTokenSymbols(
+        base: String,
+        quote: String
+    ): Optional<ExchangePair>
+
 }

@@ -20,8 +20,8 @@ open class Swap(
     open val baseAmount: BigInteger,
 
     @Convert(converter = MsgAddressConverter::class)
-    @Column(name = "exchange_pair", nullable = false, columnDefinition = "BYTEA")
-    open val exchangePair: MsgAddress,
+    @Column(name = "exchange_pair_address", nullable = false, columnDefinition = "BYTEA")
+    open val exchangePairAddress: MsgAddress,
 
     @Column(name = "quote_amount", nullable = false, columnDefinition = "NUMERIC")
     open val quoteAmount: BigInteger,
@@ -51,4 +51,8 @@ open class Swap(
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     open var id: UUID? = null
+
+    @ManyToOne
+    @JoinColumn(name = "exchange_pair_id")
+    open var exchangePair: ExchangePair? = null
 }

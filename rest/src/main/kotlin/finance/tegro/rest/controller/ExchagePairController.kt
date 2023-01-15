@@ -37,7 +37,7 @@ class ExchagePairController(
         val exchangePair = exchangePairRepository.findByAddress(address)
             .orElseThrow { throw IllegalArgumentException("Exchange pair ${address.toSafeString()} not found") }
         val reserve =
-            reserveRepository.findFirstByExchangePairAddressOrderByBlockId_TimestampDesc(exchangePair.address)
+            reserveRepository.findFirstByAddressOrderByBlockId_TimestampDesc(exchangePair.address)
                 .orElseThrow { throw IllegalArgumentException("Reserve of ${address.toSafeString()} not found") }
         return entityMapper.toDTO(exchangePair, reserve)
     }

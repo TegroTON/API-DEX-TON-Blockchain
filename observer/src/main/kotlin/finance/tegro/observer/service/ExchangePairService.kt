@@ -94,7 +94,7 @@ class ExchangePairService(
                             Swap(
                                 destination = outMsgInfo.dest,
                                 baseAmount = inMsgInfo.value.coins.amount.value - outMsgInfo.value.coins.amount.value,
-                                exchangePair = exchangePair,
+                                exchangePairAddress = exchangePair,
                                 quoteAmount = outMsgOp.amount.value,
                                 inverse = false, // Base (TON) -> Quote (Token) swap
                                 referrer = parseOpReferrer(inMsgOp.params.customPayload),
@@ -113,7 +113,7 @@ class ExchangePairService(
                             Swap(
                                 destination = outMsgInfo.dest,
                                 baseAmount = outMsgInfo.value.coins.amount.value - inMsgInfo.value.coins.amount.value,
-                                exchangePair = exchangePair,
+                                exchangePairAddress = exchangePair,
                                 quoteAmount = inMsgOp.amount.value,
                                 inverse = true, // Quote (Token) -> Base (TON) swap
                                 referrer = parseOpReferrer((inMsgOp.forwardPayloadOp() as SwapJettonPayloadOp).params.customPayload),
