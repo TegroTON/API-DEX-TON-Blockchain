@@ -18,7 +18,7 @@ class PublicController(
     private val reserveRepository: ReserveRepository,
     private val swapRepository: SwapRepository,
 ) {
-    @GetMapping("/cmc/dex")
+    @GetMapping("/dex")
     fun getSummary(): Map<String, PublicSummaryDTO> =
         exchangePairRepository.findAll()
             .mapNotNull { exchangePair ->
