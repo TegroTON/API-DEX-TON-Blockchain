@@ -8,7 +8,6 @@ import finance.tegro.rest.dto.PublicSummaryDTO
 import finance.tegro.rest.dto.PublicTickerDTO
 import finance.tegro.rest.dto.PublicTradeDTO
 import mu.KLogging
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -98,12 +97,12 @@ class PublicController(
                     PublicTradeDTO(
                         tradeId = requireNotNull(swap.id) { "Swap id is null" }.leastSignificantBits,
                         price = (BigDecimal(
-                            swap.quoteAmount,
-                            requireNotNull(swap.exchangePair?.token?.quoteToken?.metadata?.decimals) { "Quote token decimals is null" })
+                            swap.baseAmount,
+                            requireNotNull(swap.exchangePair?.token?.baseToken?.metadata?.decimals) { "Base token decimals is null" })
                             .divide(
                                 BigDecimal(
-                                    swap.baseAmount,
-                                    requireNotNull(swap.exchangePair?.token?.baseToken?.metadata?.decimals) { "Base token decimals is null" }),
+                                    swap.quoteAmount,
+                                    requireNotNull(swap.exchangePair?.token?.quoteToken?.metadata?.decimals) { "Quote token decimals is null" }),
                                 RoundingMode.UP
                             )
                             .round(MathContext(requireNotNull(swap.exchangePair?.token?.quoteToken?.metadata?.decimals) { "Quote token decimals is null" }))),
