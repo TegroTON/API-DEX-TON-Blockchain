@@ -1,8 +1,6 @@
 package finance.tegro.observer
 
-import finance.tegro.observer.job.AllExchangePairJob
-import finance.tegro.observer.job.AllReserveJob
-import finance.tegro.observer.job.AllTokenJob
+import finance.tegro.observer.job.*
 import finance.tegro.observer.properties.ScheduleProperties
 import mu.KLogging
 import org.quartz.CronScheduleBuilder
@@ -80,6 +78,30 @@ class JobSchedule(
                 .withIdentity("AllReserveTrigger_cron", "AllReserveTrigger")
                 .withSchedule(
                     CronScheduleBuilder.cronScheduleNonvalidatedExpression(scheduleProperties.reserveCron)
+                )
+                .startNow()
+                .build()
+        )
+        scheduler.scheduleJob(
+            JobBuilder.newJob(MasterchainBlockIdJob::class.java)
+                .withIdentity("MasterchainBlockIdJob_cron", "MasterchainBlockIdJob")
+                .build(),
+            TriggerBuilder.newTrigger()
+                .withIdentity("MasterchainBlockIdTrigger_cron", "MasterchainBlockIdTrigger")
+                .withSchedule(
+                    CronScheduleBuilder.cronScheduleNonvalidatedExpression(scheduleProperties.masterchainBlockCron)
+                )
+                .startNow()
+                .build()
+        )
+        scheduler.scheduleJob(
+            JobBuilder.newJob(CatchUpMissingBlockJob::class.java)
+                .withIdentity("CatchUpMissingBlockJob_cron", "CatchUpMissingBlockJob")
+                .build(),
+            TriggerBuilder.newTrigger()
+                .withIdentity("CatchUpMissingBlockTrigger_cron", "CatchUpMissingBlockTrigger")
+                .withSchedule(
+                    CronScheduleBuilder.cronScheduleNonvalidatedExpression(scheduleProperties.catchUpMissingBlockCron)
                 )
                 .startNow()
                 .build()

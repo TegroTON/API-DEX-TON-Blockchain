@@ -10,7 +10,13 @@ spring:
     username: postgres
     password: postgrespw
     type: com.zaxxer.hikari.HikariDataSource
-    
+
+  quartz:
+    properties:
+      org.quartz.threadPool.class: org.quartz.simpl.SimpleThreadPool
+      org.quartz.threadPool.threadCount: 25
+      org.quartz.threadPool.threadPriority: 5
+
 logging:
   level:
     finance.tegro: DEBUG
