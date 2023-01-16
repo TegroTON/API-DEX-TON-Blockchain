@@ -9,7 +9,6 @@ import mu.KLogging
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.ton.block.MsgAddress
 import java.time.Instant
 
 @RestController
@@ -20,11 +19,11 @@ class PublicController(
     private val swapRepository: SwapRepository,
 ) {
     @GetMapping("/cmc/dex")
-    fun getSummary(): Map<MsgAddress, PublicSummaryDTO> =
+    fun getSummary(): Map<String, PublicSummaryDTO> =
         exchangePairRepository.findAll()
             .mapNotNull { exchangePair ->
                 try {
-                    exchangePair.address to PublicSummaryDTO(
+                    requireNotNull(exchangePair.address.toSafeString()) to PublicSummaryDTO(
                         url = "https://tegro.finance/swap?from=${exchangePair.token?.baseToken?.address?.toSafeString()}&to=${exchangePair.token?.quoteToken?.address?.toSafeString()}",
                         baseId = requireNotNull(exchangePair.token?.baseToken?.address) { "Base token of ${exchangePair.address.toSafeString()} not found" },
                         baseName = requireNotNull(exchangePair.token?.baseToken?.metadata?.name) { "Base token name of ${exchangePair.address.toSafeString()} not found" },
