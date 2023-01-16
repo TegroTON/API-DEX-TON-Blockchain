@@ -41,11 +41,13 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
 
     @Query(
         """
-        SELECT MIN(TRUNC((s.quote_amount / s.base_amount), tmq.decimals))
+        SELECT MIN(TRUNC(((s.quote_amount / (10.0 ^ tmq.decimals)) / (s.base_amount / (10.0 ^ tmb.decimals))), tmq.decimals))
         FROM swaps s
                  JOIN block_ids bi on s.block_id = bi.id
                  JOIN exchange_pairs ep on s.exchange_pair_id = ep.id
                  JOIN exchange_pair_tokens ept on ep.token_id = ept.id
+                 JOIN tokens tb on ept.base_token_id = tb.id
+                 JOIN token_metadata tmb on tb.metadata_id = tmb.id
                  JOIN tokens tq on ept.quote_token_id = tq.id
                  JOIN token_metadata tmq on tq.metadata_id = tmq.id
         WHERE s.base_amount > 0 -- base_amount can be negative in some cases
@@ -61,11 +63,13 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
 
     @Query(
         """
-        SELECT MAX(TRUNC((s.quote_amount / s.base_amount), tmq.decimals))
+        SELECT MAX(TRUNC(((s.quote_amount / (10.0 ^ tmq.decimals)) / (s.base_amount / (10.0 ^ tmb.decimals))), tmq.decimals))
         FROM swaps s
                  JOIN block_ids bi on s.block_id = bi.id
                  JOIN exchange_pairs ep on s.exchange_pair_id = ep.id
                  JOIN exchange_pair_tokens ept on ep.token_id = ept.id
+                 JOIN tokens tb on ept.base_token_id = tb.id
+                 JOIN token_metadata tmb on tb.metadata_id = tmb.id
                  JOIN tokens tq on ept.quote_token_id = tq.id
                  JOIN token_metadata tmq on tq.metadata_id = tmq.id
         WHERE s.base_amount > 0 -- base_amount can be negative in some cases
