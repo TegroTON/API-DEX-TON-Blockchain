@@ -11,6 +11,7 @@ import org.ton.block.MsgAddress
 import java.util.*
 
 interface TokenRepository : JpaRepository<Token, UUID> {
+    fun existsByAddress(address: MsgAddress): Boolean
     fun findByAddress(address: MsgAddress): Optional<Token>
 
     @Transactional

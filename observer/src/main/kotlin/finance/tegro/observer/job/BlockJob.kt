@@ -7,6 +7,7 @@ import finance.tegro.core.entity.Swap
 import finance.tegro.core.repository.BlockIdRepository
 import finance.tegro.core.repository.ExchangePairRepository
 import finance.tegro.core.repository.SwapRepository
+import finance.tegro.core.repository.TokenRepository
 import finance.tegro.core.toSafeString
 import finance.tegro.observer.properties.BlockIdServiceProperties
 import kotlinx.coroutines.*
@@ -33,6 +34,7 @@ class BlockJob(
     private val blockIdRepository: BlockIdRepository,
     private val exchangePairRepository: ExchangePairRepository,
     private val swapRepository: SwapRepository,
+    private val tokenRepository: TokenRepository,
 ) : Job, CoroutineScope by CoroutineScope(Dispatchers.IO + CoroutineName("BlockJob")) {
     override fun execute(context: JobExecutionContext) {
         val jobData = context.mergedJobDataMap
@@ -158,6 +160,40 @@ class BlockJob(
     }
 
     private fun processTransaction(blockId: BlockId, transaction: Transaction) {
+        // Monitor tokens as well
+        if (tokenRepository.existsByAddress(AddrStd(blockId.workchain, transaction.account_addr))) {
+            val tokenJobKey = JobKey(
+                "TokenJob_${AddrStd(blockId.workchain, transaction.account_addr).toSafeString()}_${blockId.id}",
+                "TokenJob"
+            )
+            if (!scheduler.checkExists(tokenJobKey)) {
+                scheduler.scheduleJob(
+                    JobBuilder.newJob(TokenJob::class.java)
+                        .withIdentity(tokenJobKey)
+                        .usingJobData(
+                            JobDataMap(
+                                mapOf(
+                                    "address" to AddrStd(blockId.workchain, transaction.account_addr),
+                                    "blockId" to blockId
+                                )
+                            )
+                        )
+                        .build(),
+                    TriggerBuilder.newTrigger()
+                        .withIdentity(
+                            "TokenJobTrigger_${
+                                AddrStd(
+                                    blockId.workchain,
+                                    transaction.account_addr
+                                ).toSafeString()
+                            }_${blockId.id}", "TokenJob"
+                        )
+                        .startNow()
+                        .build()
+                )
+            }
+        }
+
         // Only interested in internal messages
         if (!(transaction.in_msg.value?.info is IntMsgInfo && transaction.out_msgs.firstOrNull()?.second?.info is IntMsgInfo))
             return
