@@ -14,7 +14,6 @@ import java.util.*
 interface SwapRepository : JpaRepository<Swap, UUID> {
     fun findByExchangePair(exchangePair: ExchangePair, pageable: Pageable): Page<Swap>
 
-
     @Query(
         """
         SELECT TRUNC(((s.base_amount / (10.0 ^ tmb.decimals)) / (s.quote_amount / (10.0 ^ tmq.decimals))), tmb.decimals)
@@ -38,51 +37,6 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
         exchangePair: ExchangePair,
         timestamp: Instant = Instant.now().minus(24, ChronoUnit.HOURS)
     ): Optional<BigDecimal>
-
-    @Query(
-        """
-        SELECT MIN(TRUNC(((s.base_amount / (10.0 ^ tmb.decimals)) / (s.quote_amount / (10.0 ^ tmq.decimals))), tmb.decimals))
-        FROM swaps s
-                 JOIN block_ids bi on s.block_id = bi.id
-                 JOIN exchange_pairs ep on s.exchange_pair_id = ep.id
-                 JOIN exchange_pair_tokens ept on ep.token_id = ept.id
-                 JOIN tokens tb on ept.base_token_id = tb.id
-                 JOIN token_metadata tmb on tb.metadata_id = tmb.id
-                 JOIN tokens tq on ept.quote_token_id = tq.id
-                 JOIN token_metadata tmq on tq.metadata_id = tmq.id
-        WHERE s.base_amount > 0 -- base_amount can be negative in some cases
-             AND s.exchange_pair_id = ?1
-             AND bi.timestamp > ?2
-    """,
-        nativeQuery = true
-    )
-    fun findMinPrice(
-        exchangePair: ExchangePair,
-        startTime: Instant = Instant.now().minus(24, ChronoUnit.HOURS)
-    ): Optional<BigDecimal>
-
-    @Query(
-        """
-        SELECT MAX(TRUNC(((s.base_amount / (10.0 ^ tmb.decimals)) / (s.quote_amount / (10.0 ^ tmq.decimals))), tmb.decimals))
-        FROM swaps s
-                 JOIN block_ids bi on s.block_id = bi.id
-                 JOIN exchange_pairs ep on s.exchange_pair_id = ep.id
-                 JOIN exchange_pair_tokens ept on ep.token_id = ept.id
-                 JOIN tokens tb on ept.base_token_id = tb.id
-                 JOIN token_metadata tmb on tb.metadata_id = tmb.id
-                 JOIN tokens tq on ept.quote_token_id = tq.id
-                 JOIN token_metadata tmq on tq.metadata_id = tmq.id
-        WHERE s.base_amount > 0 -- base_amount can be negative in some cases
-             AND s.exchange_pair_id = ?1
-             AND bi.timestamp > ?2
-    """,
-        nativeQuery = true
-    )
-    fun findMaxPrice(
-        exchangePair: ExchangePair,
-        startTime: Instant = Instant.now().minus(24, ChronoUnit.HOURS)
-    ): Optional<BigDecimal>
-
 
     @Query(
         """
