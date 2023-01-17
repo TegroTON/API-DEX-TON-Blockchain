@@ -293,7 +293,10 @@ class BlockJob(
         } else if (inMsgOp is TransferNotificationOp && inMsgOp.forwardPayloadOp() is AddLiquidityPayloadOp && outMsgOp is TransferOp) {
             // Successful liquidity deposit
             val liquidityJobKey =
-                JobKey("LiquidityJob_${inMsgInfo.src.toSafeString()}_${blockId.id}", "LiquidityJob")
+                JobKey(
+                    "LiquidityJob_${inMsgOp.sender.toSafeString()}_${exchangePair.toSafeString()}_${blockId.id}",
+                    "LiquidityJob"
+                )
 
             if (!scheduler.checkExists(liquidityJobKey))
                 scheduler.scheduleJob(
@@ -311,7 +314,7 @@ class BlockJob(
                         .build(),
                     TriggerBuilder.newTrigger()
                         .withIdentity(
-                            "LiquidityTrigger_${inMsgInfo.src.toSafeString()}_${blockId.id}",
+                            "LiquidityTrigger_${inMsgOp.sender.toSafeString()}_${exchangePair.toSafeString()}_${blockId.id}",
                             "LiquidityTrigger"
                         )
                         .startNow()
@@ -338,7 +341,7 @@ class BlockJob(
                         .build(),
                     TriggerBuilder.newTrigger()
                         .withIdentity(
-                            "LiquidityTrigger_${inMsgInfo.src.toSafeString()}_${blockId.id}",
+                            "LiquidityTrigger_${inMsgOp.sender.toSafeString()}_${exchangePair.toSafeString()}_${blockId.id}",
                             "LiquidityTrigger"
                         )
                         .startNow()

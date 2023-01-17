@@ -7,6 +7,9 @@ import org.ton.block.MsgAddress
 import java.util.*
 
 interface LiquidityRepository : JpaRepository<Liquidity, UUID> {
+    @Query("select distinct l.owner from liquidity l")
+    fun findDistinctOwners(): List<MsgAddress>
+
     fun findFirstByOwnerAndExchangePairAddressOrderByBlockId_TimestampDesc(
         owner: MsgAddress,
         exchangePairAddress: MsgAddress
