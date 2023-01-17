@@ -44,15 +44,6 @@ class JobSchedule(
                 .startNow()
                 .build()
         )
-        scheduler.scheduleJob(
-            JobBuilder.newJob(AllLiquidityJob::class.java)
-                .withIdentity("AllLiquidityJob_startup", "AllLiquidityJob")
-                .build(),
-            TriggerBuilder.newTrigger()
-                .withIdentity("AllLiquidityTrigger_startup", "AllLiquidityTrigger")
-                .startNow()
-                .build()
-        )
 
         logger.info { "Scheduling cron jobs" }
         scheduler.scheduleJob(
@@ -111,18 +102,6 @@ class JobSchedule(
                 .withIdentity("CatchUpMissingBlockTrigger_cron", "CatchUpMissingBlockTrigger")
                 .withSchedule(
                     CronScheduleBuilder.cronScheduleNonvalidatedExpression(scheduleProperties.catchUpMissingBlockCron)
-                )
-                .startNow()
-                .build()
-        )
-        scheduler.scheduleJob(
-            JobBuilder.newJob(AllLiquidityJob::class.java)
-                .withIdentity("AllLiquidityJob_cron", "AllLiquidityJob")
-                .build(),
-            TriggerBuilder.newTrigger()
-                .withIdentity("AllLiquidityTrigger_cron", "AllLiquidityTrigger")
-                .withSchedule(
-                    CronScheduleBuilder.cronScheduleNonvalidatedExpression(scheduleProperties.liquidityCron)
                 )
                 .startNow()
                 .build()

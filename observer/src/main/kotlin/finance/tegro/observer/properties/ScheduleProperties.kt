@@ -16,9 +16,6 @@ data class ScheduleProperties(
     @DefaultValue("0 0/10 * * * ?")
     val reserveCron: String,
 
-    @DefaultValue("0 0 0/4 * * ?")
-    val liquidityCron: String,
-
     @DefaultValue("0/2 * * * * ?")
     val masterchainBlockCron: String,
 
