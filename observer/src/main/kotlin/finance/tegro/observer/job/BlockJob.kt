@@ -254,7 +254,7 @@ class BlockJob(
             // Successful TON -> Jetton swap
             swapRepository.save(
                 Swap(
-                    destination = outMsgInfo.dest,
+                    destination = outMsgOp.destination,
                     baseAmount = inMsgInfo.value.coins.amount.value - outMsgInfo.value.coins.amount.value,
                     exchangePairAddress = exchangePair,
                     quoteAmount = outMsgOp.amount.value,
