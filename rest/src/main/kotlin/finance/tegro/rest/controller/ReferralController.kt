@@ -30,7 +30,7 @@ class ReferralController(
     fun getSpecificReferral(@PathVariable referrer: MsgAddress, @PathVariable referral: MsgAddress): ReferralDTO {
         val firstSwap = swapRepository.findFirstReferralSwap(referrer, referral)
             .orElseThrow { throw IllegalArgumentException("Referral ${referral.toSafeString()} of ${referrer.toSafeString()} not found") }
-        val volumeTON = swapRepository.findAccountVolumeTON(referral, firstSwap.blockId.timestamp)
+        val volumeTON = swapRepository.findAccountVolumeTON(referral)
             .orElse(BigInteger.ZERO)
 
         return ReferralDTO(
