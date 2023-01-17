@@ -33,11 +33,16 @@ class ExchangePairAdminJob(
             return
 
         launch {
-            val admin = PairContract.getAdminAddress(
-                checkNotNull(address as? AddrStd) { "ExchangePairAdmin address is not valid" },
-                liteClient,
-                blockId.toTonNodeBlockIdExt()
-            )
+            val admin = try {
+                PairContract.getAdminAddress(
+                    checkNotNull(address as? AddrStd) { "ExchangePairAdmin address is not valid" },
+                    liteClient,
+                    blockId.toTonNodeBlockIdExt()
+                )
+            } catch (e: Exception) {
+                logger.warn(e) { "failed to get admin address for address ${address.toSafeString()} and blockId ${blockId.workchain}:${blockId.shard}:${blockId.seqno}" }
+                null
+            } ?: return@launch
 
             val exchangePairAdmin = (
                     withContext(Dispatchers.IO) {

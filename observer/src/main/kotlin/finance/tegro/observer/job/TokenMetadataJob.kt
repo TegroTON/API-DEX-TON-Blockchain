@@ -34,10 +34,15 @@ class TokenMetadataJob(
 
         launch {
             val metadata = if (address != AddrNone) {
-                JettonMetadata.of(
-                    tokenContract.content,
-                    WebClient.create(),
-                )
+                try {
+                    JettonMetadata.of(
+                        tokenContract.content,
+                        WebClient.create(),
+                    )
+                } catch (e: Exception) {
+                    logger.warn(e) { "failed to get metadata for address ${address.toSafeString()} and blockId ${blockId.workchain}:${blockId.shard}:${blockId.seqno}" }
+                    null
+                } ?: return@launch
             } else {
                 // TODO: Put default metadata into contract's content
                 JettonMetadata(

@@ -34,11 +34,16 @@ class ReserveJob(
             return
 
         launch {
-            val (base, quote) = PairContract.getReserves(
-                checkNotNull(address as? AddrStd) { "Reserve address is not valid" },
-                liteClient,
-                blockId.toTonNodeBlockIdExt()
-            )
+            val (base, quote) = try {
+                PairContract.getReserves(
+                    checkNotNull(address as? AddrStd) { "Reserve address is not valid" },
+                    liteClient,
+                    blockId.toTonNodeBlockIdExt()
+                )
+            } catch (e: Exception) {
+                logger.warn(e) { "failed to get reserves for address ${address.toSafeString()} and blockId ${blockId.workchain}:${blockId.shard}:${blockId.seqno}" }
+                return@launch
+            }
 
             withContext(Dispatchers.IO) {
                 reserveRepository.save(

@@ -34,11 +34,16 @@ class TokenContractJob(
 
         launch {
             val contract = if (address != AddrNone) {
-                JettonContract.of(
-                    checkNotNull(address as? AddrStd) { "TokenContract address is not valid" },
-                    liteClient,
-                    blockId.toTonNodeBlockIdExt()
-                )
+                try {
+                    JettonContract.of(
+                        checkNotNull(address as? AddrStd) { "TokenContract address is not valid" },
+                        liteClient,
+                        blockId.toTonNodeBlockIdExt()
+                    )
+                } catch (e: Exception) {
+                    logger.warn(e) { "failed to get contract for address ${address.toSafeString()} and blockId ${blockId.workchain}:${blockId.shard}:${blockId.seqno}" }
+                    null
+                } ?: return@launch
             } else {
                 JettonContract.ofTon()
             }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component
 import org.ton.block.AddrStd
 import org.ton.block.MsgAddress
 import org.ton.lite.client.LiteClient
+import java.math.BigInteger
 import java.time.Instant
 
 @Component
@@ -32,26 +33,37 @@ class LiquidityJob(
         val blockId = jobData["blockId"] as BlockId
 
         launch {
-            val walletAddress = JettonContract.getWalletAddress(
-                checkNotNull(exchangePair as? AddrStd) { "Exchange pair address is not valid" },
-                owner,
-                liteClient,
-                blockId.toTonNodeBlockIdExt(),
-            )
+            val walletAddress = try {
+                JettonContract.getWalletAddress(
+                    checkNotNull(exchangePair as? AddrStd) { "Exchange pair address is not valid" },
+                    owner,
+                    liteClient,
+                    blockId.toTonNodeBlockIdExt(),
+                )
+            } catch (e: Exception) {
+                logger.warn(e) { "failed to get wallet address for exchange pair ${exchangePair.toSafeString()} and owner ${owner.toSafeString()} and blockId ${blockId.workchain}:${blockId.shard}:${blockId.seqno}" }
+                null
+            } ?: return@launch
 
-            val wallet = WalletContract.of(
-                checkNotNull(walletAddress as? AddrStd) { "Liquidity wallet address is not valid" },
-                liteClient,
-                blockId.toTonNodeBlockIdExt(),
-            )
+
+            val wallet = try {
+                WalletContract.of(
+                    checkNotNull(walletAddress as? AddrStd) { "Liquidity wallet address is not valid" },
+                    liteClient,
+                    blockId.toTonNodeBlockIdExt(),
+                )
+            } catch (e: Exception) {
+                logger.warn(e) { "failed to get wallet for address ${walletAddress.toSafeString()} and blockId ${blockId.workchain}:${blockId.shard}:${blockId.seqno}" }
+                null
+            }
 
             withContext(Dispatchers.IO) {
                 liquidityRepository.save(
                     Liquidity(
                         walletAddress,
-                        wallet.owner,
-                        wallet.jetton,
-                        wallet.balance,
+                        wallet?.owner ?: owner,
+                        wallet?.jetton ?: exchangePair,
+                        wallet?.balance ?: BigInteger.ZERO,
                         blockId,
                         Instant.now()
                     ).apply {
@@ -63,7 +75,7 @@ class LiquidityJob(
             }
 
             // Trigger liquidity token update
-            val tokenJobKey = JobKey("TokenJob_${wallet.jetton.toSafeString()}_${blockId.id}", "TokenJob")
+            val tokenJobKey = JobKey("TokenJob_${exchangePair.toSafeString()}_${blockId.id}", "TokenJob")
 
             if (!scheduler.checkExists(tokenJobKey))
                 scheduler.scheduleJob(
@@ -72,7 +84,7 @@ class LiquidityJob(
                         .usingJobData(
                             JobDataMap(
                                 mapOf(
-                                    "address" to wallet.jetton,
+                                    "address" to exchangePair,
                                     "blockId" to blockId,
                                 )
                             )
@@ -80,7 +92,7 @@ class LiquidityJob(
                         .build(),
                     TriggerBuilder.newTrigger()
                         .withIdentity(
-                            "TokenTrigger_${wallet.jetton.toSafeString()}_${blockId.id}",
+                            "TokenTrigger_${exchangePair.toSafeString()}_${blockId.id}",
                             "TokenTrigger"
                         )
                         .startNow()

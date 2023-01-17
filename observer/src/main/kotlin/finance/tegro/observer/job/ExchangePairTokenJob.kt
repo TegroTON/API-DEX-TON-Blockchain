@@ -34,11 +34,16 @@ class ExchangePairTokenJob(
             return
 
         launch {
-            val (base, quote) = PairContract.getPairTokens(
-                checkNotNull(address as? AddrStd) { "ExchangePairToken address is not valid" },
-                liteClient,
-                blockId.toTonNodeBlockIdExt()
-            )
+            val (base, quote) = try {
+                PairContract.getPairTokens(
+                    checkNotNull(address as? AddrStd) { "ExchangePairToken address is not valid" },
+                    liteClient,
+                    blockId.toTonNodeBlockIdExt()
+                )
+            } catch (e: Exception) {
+                logger.warn(e) { "failed to get pair tokens for address ${address.toSafeString()} and blockId ${blockId.workchain}:${blockId.shard}:${blockId.seqno}" }
+                null
+            } ?: return@launch
 
             val exchangePairToken = (withContext(Dispatchers.IO) {
                 exchangePairTokenRepository.findByAddress(address)
