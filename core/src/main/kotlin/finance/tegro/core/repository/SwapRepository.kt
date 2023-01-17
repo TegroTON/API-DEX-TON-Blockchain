@@ -1,5 +1,6 @@
 package finance.tegro.core.repository;
 
+import finance.tegro.core.converter.MsgAddressConverter
 import finance.tegro.core.entity.ExchangePair
 import finance.tegro.core.entity.Swap
 import org.springframework.data.domain.Page
@@ -12,6 +13,7 @@ import java.math.BigInteger
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
+import javax.persistence.EntityManager
 
 interface SwapRepository : JpaRepository<Swap, UUID> {
     fun findByExchangePair(exchangePair: ExchangePair, pageable: Pageable): Page<Swap>
@@ -40,24 +42,7 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
         timestamp: Instant = Instant.now().minus(24, ChronoUnit.HOURS)
     ): Optional<BigDecimal>
 
-    @Query(
-        """
-        SELECT SUM(TRUNC(s.base_amount / (10.0 ^ tmb.decimals), tmb.decimals))
-        FROM swaps s
-                 JOIN block_ids bi on s.block_id = bi.id
-                 JOIN exchange_pairs ep on s.exchange_pair_id = ep.id
-                 JOIN exchange_pair_tokens ept on ep.token_id = ept.id
-                 JOIN tokens tb on ept.base_token_id = tb.id
-                 JOIN token_metadata tmb on tb.metadata_id = tmb.id
-        WHERE s.exchange_pair_id = ?1
-             AND bi.timestamp > ?2
-        """,
-        nativeQuery = true
-    )
-    fun findBaseVolume(
-        exchangePair: ExchangePair,
-        startTime: Instant = Instant.now().minus(24, ChronoUnit.HOURS)
-    ): Optional<BigDecimal>
+    fun findFirstByDestinationOrderByBlockId_TimestampAsc(destination: MsgAddress): Optional<Swap>
 
     @Query(
         """
@@ -84,29 +69,22 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
 
     @Query(
         """
-        SELECT s
-        FROM swap s
-            JOIN block_id bi on s.blockId = bi.id
-        WHERE s.referrer = ?1 AND s.destination = ?2
-        ORDER BY bi.timestamp ASC
-    """
-    )
-    fun findFirstReferralSwap(referrer: MsgAddress, referral: MsgAddress): Optional<Swap>
-
-
-    @Query(
-        """
-        SELECT SUM(s.base_amount)
+        SELECT SUM(TRUNC(s.base_amount / (10.0 ^ tmb.decimals), tmb.decimals))
         FROM swaps s
                  JOIN block_ids bi on s.block_id = bi.id
                  JOIN exchange_pairs ep on s.exchange_pair_id = ep.id
                  JOIN exchange_pair_tokens ept on ep.token_id = ept.id
-        WHERE s.destination = ?1 AND ept.base = '\xB5EE9C7201010101000300000120' -- Just TON
+                 JOIN tokens tb on ept.base_token_id = tb.id
+                 JOIN token_metadata tmb on tb.metadata_id = tmb.id
+        WHERE s.exchange_pair_id = ?1
+             AND bi.timestamp > ?2
         """,
         nativeQuery = true
     )
-    fun findAccountVolumeTON(account: MsgAddress): Optional<BigInteger>
-
+    fun findBaseVolume(
+        exchangePair: ExchangePair,
+        startTime: Instant = Instant.now().minus(24, ChronoUnit.HOURS)
+    ): Optional<BigDecimal>
 
     @Query(
         """
@@ -126,4 +104,47 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
         exchangePair: ExchangePair,
         startTime: Instant = Instant.now().minus(24, ChronoUnit.HOURS)
     ): Optional<BigDecimal>
+
+    companion object {
+        @JvmStatic
+        fun findAllReferrals(entityManager: EntityManager, referrer: MsgAddress): List<MsgAddress> =
+            entityManager.createNativeQuery(
+                """
+        SELECT DISTINCT s.destination 
+        FROM swaps s
+            JOIN block_ids bi on s.block_id = bi.id
+        WHERE s.referrer = ?1
+            AND NOT EXISTS (
+                SELECT *
+                FROM exchange_pairs ep
+                WHERE ep.address = s.destination -- exclude routed swaps
+            )
+            AND NOT EXISTS (
+                SELECT s2
+                FROM swaps s2
+                    JOIN block_ids bi2 on s2.block_id = bi2.id
+                WHERE s.destination = s2.destination -- Same destination
+                    AND bi2.timestamp < bi.timestamp -- Before referral
+            )
+    """
+            ).setParameter(1, MsgAddressConverter().convertToDatabaseColumn(referrer))
+                .resultList
+                .map { MsgAddressConverter().convertToEntityAttribute(it as ByteArray) }
+
+        @JvmStatic
+        fun findAccountVolumeTON(entityManager: EntityManager, account: MsgAddress): BigInteger? =
+            entityManager.createNativeQuery(
+                """
+        SELECT SUM(s.base_amount)
+        FROM swaps s
+                 JOIN block_ids bi on s.block_id = bi.id
+                 JOIN exchange_pairs ep on s.exchange_pair_id = ep.id
+                 JOIN exchange_pair_tokens ept on ep.token_id = ept.id
+        WHERE s.destination = ?1 AND ept.base = '\xB5EE9C7201010101000300000120' -- Just TON
+        """
+            ).setParameter(1, MsgAddressConverter().convertToDatabaseColumn(account))
+                .resultList
+                .map { (it as BigDecimal).toBigInteger() }
+                .firstOrNull()
+    }
 }
