@@ -59,14 +59,26 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
         startTime: Instant = Instant.now().minus(24, ChronoUnit.HOURS)
     ): Optional<BigDecimal>
 
-    // TODO: Exclude overwritten referrals
     @Query(
         """
         SELECT DISTINCT s.destination 
-        FROM swap s
-            JOIN exchange_pair AS ep ON ep.address = s.destination
-        WHERE ep.address IS NULL AND s.referrer = ?1
-    """
+        FROM swaps s
+            JOIN block_ids bi on s.block_id = bi.id
+        WHERE s.referrer = ?1
+            AND NOT EXISTS (
+                SELECT *
+                FROM exchange_pairs ep
+                WHERE ep.address = s.destination -- exclude routed swaps
+            )
+            AND NOT EXISTS (
+                SELECT s2
+                FROM swaps s2
+                    JOIN block_ids bi2 on s2.block_id = bi2.id
+                WHERE s.destination = s2.destination -- Same destination
+                    AND bi2.timestamp < bi.timestamp -- Before referral
+            )
+    """,
+        nativeQuery = true
     )
     fun findAllReferrals(referrer: MsgAddress): List<MsgAddress>
 
@@ -90,11 +102,10 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
                  JOIN exchange_pairs ep on s.exchange_pair_id = ep.id
                  JOIN exchange_pair_tokens ept on ep.token_id = ept.id
         WHERE s.destination = ?1 AND ept.base = '\xB5EE9C7201010101000300000120' -- Just TON
-                AND bi.timestamp > ?2
         """,
         nativeQuery = true
     )
-    fun findAccountVolumeTON(account: MsgAddress, startTime: Instant): Optional<BigInteger>
+    fun findAccountVolumeTON(account: MsgAddress): Optional<BigInteger>
 
 
     @Query(
