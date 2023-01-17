@@ -59,6 +59,7 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
         startTime: Instant = Instant.now().minus(24, ChronoUnit.HOURS)
     ): Optional<BigDecimal>
 
+    // TODO: Exclude overwritten referrals
     @Query(
         """
         SELECT DISTINCT s.destination 
