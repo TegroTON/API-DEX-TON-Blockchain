@@ -21,7 +21,7 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
 
     @Query(
         """
-        SELECT TRUNC(((s.base_amount / (10.0 ^ tmb.decimals)) / (s.quote_amount / (10.0 ^ tmq.decimals))), tmb.decimals)
+        SELECT TRUNC(((s.quote_amount / (10.0 ^ tmq.decimals)) / (s.base_amount / (10.0 ^ tmb.decimals))), tmq.decimals)
         FROM swaps s
                  JOIN block_ids bi on s.block_id = bi.id
                  JOIN exchange_pairs ep on s.exchange_pair_id = ep.id

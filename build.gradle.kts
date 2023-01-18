@@ -12,7 +12,7 @@ plugins {
 
 allprojects {
     group = "finance.tegro"
-    version = "1.4.4"
+    version = "1.4.5"
 
     tasks.withType<JavaCompile> {
         sourceCompatibility = "11"

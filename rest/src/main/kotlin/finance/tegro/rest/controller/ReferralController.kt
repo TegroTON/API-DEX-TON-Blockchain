@@ -46,7 +46,8 @@ class ReferralController(
                     .orElseThrow { IllegalStateException("Failed to get price of TGR for $time") }
 
                 volume.toBigDecimal(tegroExchangePair.token?.baseToken?.metadata?.decimals ?: 0)
-                    .divide(price, RoundingMode.HALF_DOWN)
+                    .multiply(price)
+                    .setScale(tegroExchangePair.token?.quoteToken?.metadata?.decimals ?: 0, RoundingMode.HALF_DOWN)
             }
             .sumOf { it }
 
