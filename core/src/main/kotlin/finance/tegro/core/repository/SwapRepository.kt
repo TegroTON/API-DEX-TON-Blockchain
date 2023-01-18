@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query
 import org.ton.block.MsgAddress
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.sql.Timestamp
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -132,10 +133,10 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
                 .map { MsgAddressConverter().convertToEntityAttribute(it as ByteArray) }
 
         @JvmStatic
-        fun findAccountVolumeTON(entityManager: EntityManager, account: MsgAddress): BigInteger? =
+        fun findAccountVolume(entityManager: EntityManager, account: MsgAddress): Map<Instant, BigInteger> =
             entityManager.createNativeQuery(
                 """
-        SELECT SUM(s.base_amount)
+        SELECT bi.timestamp, s.base_amount
         FROM swaps s
                  JOIN block_ids bi on s.block_id = bi.id
                  JOIN exchange_pairs ep on s.exchange_pair_id = ep.id
@@ -144,7 +145,9 @@ interface SwapRepository : JpaRepository<Swap, UUID> {
         """
             ).setParameter(1, MsgAddressConverter().convertToDatabaseColumn(account))
                 .resultList
-                .map { (it as BigDecimal).toBigInteger() }
-                .firstOrNull()
+                .map { it as Array<*> }
+                .associate {
+                    (it[0] as Timestamp).toInstant() to (it[1] as BigDecimal).toBigInteger()
+                }
     }
 }
