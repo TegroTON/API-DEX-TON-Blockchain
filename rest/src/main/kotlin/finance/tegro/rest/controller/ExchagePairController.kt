@@ -36,10 +36,7 @@ class ExchagePairController(
     fun getPairByAddress(@PathVariable address: MsgAddress): ExchangePairDTO {
         val exchangePair = exchangePairRepository.findByAddress(address)
             .orElseThrow { throw IllegalArgumentException("Exchange pair ${address.toSafeString()} not found") }
-        val reserve =
-            reserveRepository.findFirstByAddressOrderByBlockId_TimestampDesc(exchangePair.address)
-                .orElseThrow { throw IllegalArgumentException("Reserve of ${address.toSafeString()} not found") }
-        return entityMapper.toDTO(exchangePair, reserve)
+        return entityMapper.toDTO(exchangePair)
     }
 
     @GetMapping("/token/{base}/{quote}")
