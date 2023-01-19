@@ -9,6 +9,7 @@ import mu.KLogging
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 import java.time.Instant
 
 @RestController
@@ -28,13 +29,11 @@ class PublicController(
                         baseId = requireNotNull(exchangePair.token?.baseToken?.address) { "Base token of ${exchangePair.address.toSafeString()} not found" },
                         baseName = requireNotNull(exchangePair.token?.baseToken?.metadata?.name) { "Base token name of ${exchangePair.address.toSafeString()} not found" },
                         baseSymbol = requireNotNull(exchangePair.token?.baseToken?.metadata?.symbol) { "Base token symbol of ${exchangePair.address.toSafeString()} not found" },
-                        baseVolume = swapRepository.findBaseVolume(exchangePair)
-                            .orElseThrow { throw IllegalArgumentException("Base volume of ${exchangePair.address.toSafeString()} not found") },
+                        baseVolume = swapRepository.findBaseVolume(exchangePair).orElse(BigDecimal.ZERO),
                         quoteId = requireNotNull(exchangePair.token?.quoteToken?.address) { "Quote token of ${exchangePair.address.toSafeString()} not found" },
                         quoteName = requireNotNull(exchangePair.token?.quoteToken?.metadata?.name) { "Quote token name of ${exchangePair.address.toSafeString()} not found" },
                         quoteSymbol = requireNotNull(exchangePair.token?.quoteToken?.metadata?.symbol) { "Quote token symbol of ${exchangePair.address.toSafeString()} not found" },
-                        quoteVolume = swapRepository.findQuoteVolume(exchangePair)
-                            .orElseThrow { throw IllegalArgumentException("Quote volume of ${exchangePair.address.toSafeString()} not found") },
+                        quoteVolume = swapRepository.findQuoteVolume(exchangePair).orElse(BigDecimal.ZERO),
                         lastPrice = swapRepository.findPriceOn(exchangePair, Instant.now())
                             .orElseThrow { throw IllegalArgumentException("Price of ${exchangePair.address.toSafeString()} now not found") },
                     )
