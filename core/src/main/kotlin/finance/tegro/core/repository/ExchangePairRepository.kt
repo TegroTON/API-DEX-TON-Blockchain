@@ -3,6 +3,7 @@ package finance.tegro.core.repository
 import finance.tegro.core.entity.ExchangePair
 import finance.tegro.core.entity.ExchangePairAdmin
 import finance.tegro.core.entity.ExchangePairToken
+import finance.tegro.core.entity.Token
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -36,4 +37,6 @@ interface ExchangePairRepository : JpaRepository<ExchangePair, UUID> {
         quote: String
     ): Optional<ExchangePair>
 
+    @Query("select e from exchange_pair e where e.token.baseToken = ?1 or e.token.quoteToken = ?1")
+    fun findByToken_BaseTokenOrToken_QuoteToken(token: Token): List<ExchangePair>
 }

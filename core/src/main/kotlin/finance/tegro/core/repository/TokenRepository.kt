@@ -23,4 +23,18 @@ interface TokenRepository : JpaRepository<Token, UUID> {
     @Modifying
     @Query("update token t set t.metadata = ?1, t.timestamp = now() where t.address = ?2")
     fun updateMetadataByAddress(metadata: TokenMetadata, address: MsgAddress)
+
+    @Query(
+        """
+        SELECT *
+        FROM tokens t
+        WHERE NOT EXISTS (
+            SELECT DISTINCT e.liquidity_token_id
+            FROM exchange_pair_tokens e
+            WHERE e.liquidity_token_id = t.id
+        )
+    """,
+        nativeQuery = true
+    )
+    fun findAllNonLiquidityTokens(): List<Token>
 }

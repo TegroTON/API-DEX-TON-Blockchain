@@ -19,7 +19,6 @@ class ExchagePairController(
 
     private val exchangePairRepository: ExchangePairRepository,
     private val exchangePairTokenRepository: ExchangePairTokenRepository,
-    private val reserveRepository: ReserveRepository,
 ) {
     @GetMapping
     fun getAllPairs(): List<ExchangePairDTO> =
