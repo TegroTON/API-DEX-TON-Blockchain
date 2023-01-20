@@ -10,6 +10,13 @@ spring:
     password: postgrespw
     type: com.zaxxer.hikari.HikariDataSource
 
+springdoc:
+  paths-to-match: /public/**
+  api-docs:
+    path: /public/api.json
+  swagger-ui:
+    path: /public
+
 logging:
   level:
     finance.tegro: DEBUG

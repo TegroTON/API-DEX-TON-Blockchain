@@ -5,8 +5,11 @@ import finance.tegro.core.repository.SwapRepository
 import finance.tegro.core.toMsgAddress
 import finance.tegro.core.toSafeString
 import finance.tegro.rest.dto.PublicDexDTO
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import mu.KLogging
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
@@ -17,8 +20,9 @@ class PublicController(
     private val exchangePairRepository: ExchangePairRepository,
     private val swapRepository: SwapRepository,
 ) {
+    @Operation(summary = "Get information about lal available exchange pairs on DEX")
     @GetMapping("/dex")
-    fun getAllDexes(): Map<String, PublicDexDTO> =
+    fun getAllDexes(): List<PublicDexDTO> =
         exchangePairRepository.findAll()
             .mapNotNull { exchangePair ->
                 try {
@@ -28,10 +32,10 @@ class PublicController(
                     null
                 }
             }
-            .associate { it.id to it }
 
+    @Operation(summary = "Get information about specific exchange pair of DEX")
     @GetMapping("/dex/{address}")
-    fun getDex(address: String): PublicDexDTO =
+    fun getDex(@Parameter(description = "Id of the exchange pair") @PathVariable address: String): PublicDexDTO =
         exchangePairRepository.findByAddress(address.toMsgAddress())
             .map { exchangePair ->
                 PublicDexDTO(
