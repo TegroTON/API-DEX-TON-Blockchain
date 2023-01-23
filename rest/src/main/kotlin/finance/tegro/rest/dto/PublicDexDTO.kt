@@ -47,7 +47,7 @@ data class PublicDexDTO(
         example = "1.234567891"
     )
     @JsonProperty("base_volume")
-    val baseVolume: BigDecimal?,
+    val baseVolume: BigDecimal,
 
     @field:Schema(
         description = "Id of the quote token, `null` is a valid ID of the native blockchain token (TON)",
@@ -76,7 +76,7 @@ data class PublicDexDTO(
         example = "1.234567891"
     )
     @JsonProperty("quote_volume")
-    val quoteVolume: BigDecimal?,
+    val quoteVolume: BigDecimal,
 
     @field:Schema(description = "last traded price", type = "string", example = "0.123456789")
     @JsonProperty("last_price")

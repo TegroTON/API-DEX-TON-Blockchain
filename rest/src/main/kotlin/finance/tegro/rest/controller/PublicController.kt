@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 import java.time.Instant
 
 @RestController
@@ -44,11 +45,11 @@ class PublicController(
                     baseId = exchangePair.token?.baseToken?.address?.toSafeString(),
                     baseName = requireNotNull(exchangePair.token?.baseToken?.metadata?.name) { "Base token name of ${exchangePair.address.toSafeString()} not found" },
                     baseSymbol = requireNotNull(exchangePair.token?.baseToken?.metadata?.symbol) { "Base token symbol of ${exchangePair.address.toSafeString()} not found" },
-                    baseVolume = swapRepository.findBaseVolume(exchangePair).orElse(null),
+                    baseVolume = swapRepository.findBaseVolume(exchangePair).orElse(BigDecimal.ZERO),
                     quoteId = exchangePair.token?.quoteToken?.address?.toSafeString(),
                     quoteName = requireNotNull(exchangePair.token?.quoteToken?.metadata?.name) { "Quote token name of ${exchangePair.address.toSafeString()} not found" },
                     quoteSymbol = requireNotNull(exchangePair.token?.quoteToken?.metadata?.symbol) { "Quote token symbol of ${exchangePair.address.toSafeString()} not found" },
-                    quoteVolume = swapRepository.findQuoteVolume(exchangePair).orElse(null),
+                    quoteVolume = swapRepository.findQuoteVolume(exchangePair).orElse(BigDecimal.ZERO),
                     lastPrice = swapRepository.findPriceOn(exchangePair, Instant.now()).orElse(null),
                 )
             }
