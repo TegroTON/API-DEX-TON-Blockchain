@@ -23,10 +23,9 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableScheduling
 @SpringBootApplication
 class RestApplication {
-    companion object : KLogging() {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            runApplication<RestApplication>(*args)
-        }
-    }
+    companion object : KLogging()
+}
+
+fun main(args: Array<String>) {
+    runApplication<RestApplication>(*args)
 }
