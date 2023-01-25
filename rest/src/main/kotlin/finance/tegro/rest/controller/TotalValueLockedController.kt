@@ -6,6 +6,10 @@ import finance.tegro.core.repository.TokenRepository
 import finance.tegro.core.toSafeString
 import finance.tegro.rest.dto.TotalValueLockedDTO
 import finance.tegro.rest.mapper.EntityMapper
+import mu.KLogging
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -20,6 +24,7 @@ class TotalValueLockedController(
     private val tokenRepository: TokenRepository,
     private val reserveRepository: ReserveRepository,
 ) {
+    @Cacheable("tvl")
     @GetMapping
     fun getAllTotalValueLocked(): List<TotalValueLockedDTO> =
         tokenRepository.findAllNonLiquidityTokens()
@@ -31,6 +36,13 @@ class TotalValueLockedController(
                 }
             }
 
+    @CacheEvict("tvl", allEntries = true)
+    @Scheduled(fixedRateString = "\${observer.cache.tvl:30000}")
+    fun evictAllTvl() {
+        logger.debug { "Evicting all tvl" }
+    }
+
+    @Cacheable("tvl_by_address")
     @GetMapping("/{address}")
     fun getTotalValueLocked(@PathVariable address: MsgAddress): TotalValueLockedDTO {
         val token = tokenRepository.findByAddress(address)
@@ -52,4 +64,12 @@ class TotalValueLockedController(
             pairs = exchangePairs.map { it.address },
         )
     }
+
+    @CacheEvict("tvl_by_address", allEntries = true)
+    @Scheduled(fixedRateString = "\${observer.cache.tvl_by_address:30000}")
+    fun evictAllTvlByAddress() {
+        logger.debug { "Evicting all tvls by address" }
+    }
+
+    companion object : KLogging()
 }

@@ -7,6 +7,9 @@ import finance.tegro.core.toSafeString
 import finance.tegro.rest.dto.ReferralDTO
 import jakarta.persistence.EntityManager
 import mu.KLogging
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -21,6 +24,7 @@ class ReferralController(
     private val exchangePairRepository: ExchangePairRepository,
     private val swapRepository: SwapRepository,
 ) {
+    @Cacheable("referrals")
     @GetMapping("/{referrer}")
     fun getAllReferrals(@PathVariable referrer: MsgAddress): List<ReferralDTO> =
         SwapRepository.findAllReferrals(entityManager, referrer)
@@ -33,6 +37,13 @@ class ReferralController(
                 }
             }
 
+    @CacheEvict("referrals", allEntries = true)
+    @Scheduled(fixedRateString = "\${observer.cache.referrals:10000}")
+    fun evictAllReferrals() {
+        logger.debug { "Evicting all referrals" }
+    }
+
+    @Cacheable("referral")
     @GetMapping("/{referrer}/{referral}")
     fun getSpecificReferral(@PathVariable referrer: MsgAddress, @PathVariable referral: MsgAddress): ReferralDTO {
         val tegroExchangePair =
@@ -56,6 +67,12 @@ class ReferralController(
             volume,
             firstSwap.blockId.timestamp,
         )
+    }
+
+    @CacheEvict("referral", allEntries = true)
+    @Scheduled(fixedRateString = "\${observer.cache.referral:10000}")
+    fun evictAllReferral() {
+        logger.debug { "Evicting all referral" }
     }
 
     companion object : KLogging()

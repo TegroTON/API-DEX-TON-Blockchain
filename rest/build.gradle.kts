@@ -23,7 +23,8 @@ repositories {
 dependencies {
     implementation(platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
     implementation(project(":core"))
-
+    
+    implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 //    implementation("org.springframework.boot:spring-boot-starter-validation") // Takes too long?
     implementation("org.springframework.boot:spring-boot-starter-web")

@@ -10,6 +10,7 @@ import org.springframework.boot.runApplication
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.scheduling.annotation.EnableScheduling
 
 @OpenAPIDefinition(
     servers = [Server(url = "/")]
@@ -19,6 +20,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EntityScan("finance.tegro.core.entity")
 @ComponentScan("finance.tegro.rest", "finance.tegro.core")
 @EnableCaching
+@EnableScheduling
 @SpringBootApplication
 class RestApplication {
     companion object : KLogging() {
