@@ -10,8 +10,6 @@ spring:
     password: postgrespw
     type: com.zaxxer.hikari.HikariDataSource
   flyway.enabled: false
-  jpa.properties:
-    jakarta.persistence.validation.mode: none
 
 springdoc:
   paths-to-match: /public/**

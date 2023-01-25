@@ -1,9 +1,9 @@
 package finance.tegro.core.converter
 
-import jakarta.persistence.AttributeConverter
-import jakarta.persistence.Converter
 import org.ton.boc.BagOfCells
 import org.ton.cell.Cell
+import javax.persistence.AttributeConverter
+import javax.persistence.Converter
 
 @Converter(autoApply = true)
 class CellConverter : AttributeConverter<Cell, ByteArray> {

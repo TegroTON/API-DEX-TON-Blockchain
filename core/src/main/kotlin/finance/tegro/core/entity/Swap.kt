@@ -2,12 +2,12 @@ package finance.tegro.core.entity
 
 import finance.tegro.core.converter.MsgAddressConverter
 import finance.tegro.core.converter.TransactionConverter
-import jakarta.persistence.*
 import org.ton.block.MsgAddress
 import org.ton.block.Transaction
 import java.math.BigInteger
 import java.time.Instant
 import java.util.*
+import javax.persistence.*
 
 @Entity(name = "swap")
 @Table(name = "swaps")

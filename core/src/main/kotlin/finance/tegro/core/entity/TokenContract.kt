@@ -2,13 +2,13 @@ package finance.tegro.core.entity
 
 import finance.tegro.core.converter.CellConverter
 import finance.tegro.core.converter.MsgAddressConverter
-import jakarta.persistence.*
 import org.hibernate.annotations.NaturalId
 import org.ton.block.MsgAddress
 import org.ton.cell.Cell
 import java.math.BigInteger
 import java.time.Instant
 import java.util.*
+import javax.persistence.*
 
 @Entity(name = "token_contract")
 @Table(name = "token_contracts")

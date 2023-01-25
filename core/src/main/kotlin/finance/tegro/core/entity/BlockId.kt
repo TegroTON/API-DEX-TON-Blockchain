@@ -1,10 +1,10 @@
 package finance.tegro.core.entity
 
-import jakarta.persistence.*
 import org.ton.api.tonnode.TonNodeBlockId
 import org.ton.api.tonnode.TonNodeBlockIdExt
 import java.time.Instant
 import java.util.*
+import javax.persistence.*
 
 @Entity(name = "block_id")
 @Table(name = "block_ids", uniqueConstraints = [UniqueConstraint(columnNames = ["workchain", "shard", "seqno"])])

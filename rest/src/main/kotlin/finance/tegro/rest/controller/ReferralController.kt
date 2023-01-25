@@ -5,7 +5,6 @@ import finance.tegro.core.repository.SwapRepository
 import finance.tegro.core.toMsgAddress
 import finance.tegro.core.toSafeString
 import finance.tegro.rest.dto.ReferralDTO
-import jakarta.persistence.EntityManager
 import mu.KLogging
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.ton.block.MsgAddress
 import java.math.RoundingMode
+import javax.persistence.EntityManager
 
 @RestController
 @RequestMapping("/v1/referral")
