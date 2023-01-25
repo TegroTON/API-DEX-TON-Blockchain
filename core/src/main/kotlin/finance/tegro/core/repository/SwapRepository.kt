@@ -3,6 +3,7 @@ package finance.tegro.core.repository;
 import finance.tegro.core.converter.MsgAddressConverter
 import finance.tegro.core.entity.ExchangePair
 import finance.tegro.core.entity.Swap
+import jakarta.persistence.EntityManager
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -14,7 +15,6 @@ import java.sql.Timestamp
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
-import javax.persistence.EntityManager
 
 interface SwapRepository : JpaRepository<Swap, UUID> {
     fun findByExchangePair(exchangePair: ExchangePair, pageable: Pageable): Page<Swap>

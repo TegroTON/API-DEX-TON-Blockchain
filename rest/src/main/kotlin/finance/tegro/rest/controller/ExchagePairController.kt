@@ -2,7 +2,6 @@ package finance.tegro.rest.controller
 
 import finance.tegro.core.repository.ExchangePairRepository
 import finance.tegro.core.repository.ExchangePairTokenRepository
-import finance.tegro.core.repository.ReserveRepository
 import finance.tegro.core.toSafeString
 import finance.tegro.rest.dto.ExchangePairDTO
 import finance.tegro.rest.mapper.EntityMapper

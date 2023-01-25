@@ -9,6 +9,7 @@ spring:
     username: postgres
     password: postgrespw
     type: com.zaxxer.hikari.HikariDataSource
+  flyway.enabled: false
 
 springdoc:
   paths-to-match: /public/**

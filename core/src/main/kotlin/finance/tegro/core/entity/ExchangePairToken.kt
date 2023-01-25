@@ -1,11 +1,11 @@
 package finance.tegro.core.entity
 
 import finance.tegro.core.converter.MsgAddressConverter
+import jakarta.persistence.*
 import org.hibernate.annotations.NaturalId
 import org.ton.block.MsgAddress
 import java.time.Instant
 import java.util.*
-import javax.persistence.*
 
 @Entity(name = "exchange_pair_token")
 @Table(
