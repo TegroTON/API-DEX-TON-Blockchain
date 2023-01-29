@@ -2,28 +2,31 @@ package finance.tegro.rest.v2.services
 
 import finance.tegro.rest.v2.exchangePairsFacade
 import finance.tegro.rest.v2.models.ExchangePairFacade
-import finance.tegro.rest.v2.models.Reserves
+import finance.tegro.rest.v2.models.PairJettons
 import finance.tegro.rest.v2.utils.smcCreateParams
 import finance.tegro.rest.v2.utils.smcMethodId
+import finance.tegro.rest.v2.utils.toAccountId
 import io.ktor.util.collections.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.slf4j.LoggerFactory
 import org.ton.api.tonnode.TonNodeBlockIdExt
+import org.ton.block.MsgAddress
 import org.ton.block.VmStack
 import org.ton.block.VmStackList
 import org.ton.boc.BagOfCells
 import org.ton.lite.api.LiteApi
 import org.ton.lite.api.liteserver.LiteServerAccountId
 import org.ton.lite.api.liteserver.functions.LiteServerRunSmcMethod
+import org.ton.tlb.loadTlb
 import kotlin.coroutines.CoroutineContext
 
-object ReservesService : CoroutineScope {
+object PairsService : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + CoroutineName(toString())
     private val log = LoggerFactory.getLogger(toString())
 
     private lateinit var job: Job
-    private val stateFlows = ConcurrentMap<LiteServerAccountId, CompletableDeferred<MutableStateFlow<Reserves>>>()
+    private val stateFlows = ConcurrentMap<LiteServerAccountId, CompletableDeferred<MutableStateFlow<PairJettons>>>()
 
     fun init(
         liteApi: LiteApi = TonLiteApiService.liteApi,
@@ -32,14 +35,14 @@ object ReservesService : CoroutineScope {
         job = launch {
             while (true) {
                 exchangePairs.allExchangePairs().forEach { address ->
-                    val reservesStateFlow = stateFlows.getOrPut(address) {
+                    val pairJettonsStateFlow = stateFlows.getOrPut(address) {
                         CompletableDeferred()
                     }
-                    if (!reservesStateFlow.isCompleted) {
+                    if (!pairJettonsStateFlow.isCompleted) {
                         launch {
-                            reservesStateFlow.complete(
+                            pairJettonsStateFlow.complete(
                                 MutableStateFlow(
-                                    getReserves(
+                                    getPairJettons(
                                         liteApi,
                                         MasterchainBlockService.blockIdFlow.value,
                                         address
@@ -47,10 +50,10 @@ object ReservesService : CoroutineScope {
                                 )
                             )
                             AccountStatesService.stateFlow(address).collectLatest { mcBlockId ->
-                                val reserves =
-                                    getReserves(liteApi, mcBlockId, address) ?: return@collectLatest
-                                reservesStateFlow.await().update {
-                                    reserves
+                                val pairJettons =
+                                    getPairJettons(liteApi, mcBlockId, address) ?: return@collectLatest
+                                pairJettonsStateFlow.await().update {
+                                    pairJettons
                                 }
                             }
                         }
@@ -61,42 +64,41 @@ object ReservesService : CoroutineScope {
         }
     }
 
-    suspend fun reserves(address: LiteServerAccountId): StateFlow<Reserves> =
+    suspend fun pairJettons(address: LiteServerAccountId): StateFlow<PairJettons> =
         stateFlows.getOrPut(address) { CompletableDeferred() }.await().asStateFlow()
 
-    suspend fun reservesAll(): List<Reserves> = coroutineScope {
+    suspend fun pairsAll(): List<PairJettons> = coroutineScope {
         exchangePairsFacade.allExchangePairs().map { address ->
             async {
-                reserves(address).value
+                pairJettons(address).value
             }
-        }.awaitAll().sortedByDescending {
-            it.base
-        }
+        }.awaitAll()
     }
 
-    private suspend fun getReserves(
+    private suspend fun getPairJettons(
         liteApi: LiteApi,
         mcBlockId: TonNodeBlockIdExt,
         address: LiteServerAccountId
-    ): Reserves? {
+    ): PairJettons? {
         val result = liteApi(
             LiteServerRunSmcMethod(
                 0b100,
                 mcBlockId,
                 address,
-                smcMethodId("get::reserves"),
+                smcMethodId("get::pair_tokens"),
                 smcCreateParams(VmStack(VmStackList())).toByteArray()
             )
         ).result ?: return null
         val stackValues = VmStack.loadTlb(BagOfCells(result).first()).toMutableVmStack()
-        return Reserves(
+
+        return PairJettons(
             address = address,
-            base = stackValues.popInt(),
-            quote = stackValues.popInt()
+            base = stackValues.popSlice().loadTlb(MsgAddress).toAccountId(),
+            quote = stackValues.popSlice().loadTlb(MsgAddress).toAccountId()
         ).also {
-            log.info("new reserves: $it")
+            log.info("new pairs: $it")
         }
     }
 
-    override fun toString(): String = "Reserves"
+    override fun toString(): String = "Pairs"
 }

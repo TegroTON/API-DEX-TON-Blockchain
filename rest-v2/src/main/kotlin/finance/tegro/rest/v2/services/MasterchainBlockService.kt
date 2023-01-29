@@ -12,9 +12,8 @@ import org.ton.lite.api.liteserver.functions.LiteServerGetMasterchainInfo
 import org.ton.lite.api.liteserver.functions.LiteServerLookupBlock
 import kotlin.coroutines.CoroutineContext
 
-@OptIn(DelicateCoroutinesApi::class)
 object MasterchainBlockService : CoroutineScope {
-    override val coroutineContext: CoroutineContext = newSingleThreadContext(toString()) + CoroutineName(toString())
+    override val coroutineContext: CoroutineContext = Dispatchers.Default + CoroutineName(toString())
 
     private lateinit var _blockIdFlow: MutableStateFlow<TonNodeBlockIdExt>
     private lateinit var liteApi: LiteApi

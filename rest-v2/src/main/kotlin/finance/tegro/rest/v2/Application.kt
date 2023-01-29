@@ -5,10 +5,7 @@ import finance.tegro.rest.v2.models.ExchangePairFacade
 import finance.tegro.rest.v2.plugins.configureLogging
 import finance.tegro.rest.v2.plugins.configureRouting
 import finance.tegro.rest.v2.plugins.configureSerialization
-import finance.tegro.rest.v2.services.ExchangePairsStateService
-import finance.tegro.rest.v2.services.MasterchainBlockService
-import finance.tegro.rest.v2.services.ReservesService
-import finance.tegro.rest.v2.services.TonLiteApiService
+import finance.tegro.rest.v2.services.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
 
@@ -17,12 +14,17 @@ fun main(args: Array<String>) = EngineMain.main(args)
 lateinit var exchangePairsFacade: ExchangePairFacade
 
 fun Application.module() {
-    DatabaseFactory.init()
+    DatabaseFactory.init(
+        url = "jdbc:postgresql://rc1a-a7v2hm0mvex0zty7.mdb.yandexcloud.net:6432/finance?sslmode=require&amp;sslfactory=org.postgresql.ssl.NonValidatingFactory",
+        username = "rest",
+        password = "Prevent-Outshoot-Parasitic9"
+    )
     exchangePairsFacade = ExchangePairFacade.cached()
     TonLiteApiService.init()
     MasterchainBlockService.init()
-    ExchangePairsStateService.init()
+    AccountStatesService.init()
     ReservesService.init()
+    PairsService.init()
 
     configureLogging()
     configureSerialization()

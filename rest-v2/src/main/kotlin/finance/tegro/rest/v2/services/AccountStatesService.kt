@@ -1,9 +1,5 @@
-@file:OptIn(DelicateCoroutinesApi::class)
-
 package finance.tegro.rest.v2.services
 
-import finance.tegro.rest.v2.exchangePairsFacade
-import finance.tegro.rest.v2.models.ExchangePairFacade
 import io.ktor.util.collections.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -15,44 +11,47 @@ import org.ton.lite.api.liteserver.LiteServerAccountId
 import org.ton.lite.api.liteserver.functions.LiteServerGetAccountState
 import kotlin.coroutines.CoroutineContext
 
-object ExchangePairsStateService : CoroutineScope {
-    override val coroutineContext: CoroutineContext = newSingleThreadContext(toString()) + CoroutineName(toString())
+object AccountStatesService : CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.Default + CoroutineName(toString())
 
     private lateinit var job: Job
-    private val exchangePairsStatesFlows =
+    private val accountStateFlows =
         ConcurrentMap<LiteServerAccountId, CompletableDeferred<MutableStateFlow<Pair<TonNodeBlockIdExt, Bits256>>>>()
 
     fun init(
         liteApi: LiteApi = TonLiteApiService.liteApi,
-        exchangePairFacade: ExchangePairFacade = exchangePairsFacade,
         masterchainBlockIdFlow: StateFlow<TonNodeBlockIdExt> = MasterchainBlockService.blockIdFlow,
     ) {
         job = launch {
             masterchainBlockIdFlow.collectLatest { mcBlockId ->
-                val exchangePairsStates = exchangePairFacade.allExchangePairs().map { exchangePair ->
+                val accountStates = accountStateFlows.keys.map { address ->
                     async {
-                        exchangePair.address to liteApi(
+                        address to liteApi(
                             LiteServerGetAccountState(
                                 mcBlockId,
-                                exchangePair.address
+                                address
                             )
                         ).state.let {
                             Bits256(sha256(it))
                         }
                     }
                 }.awaitAll()
-                exchangePairsStates.forEach { (address, stateHash) ->
+                accountStates.forEach { (address, stateHash) ->
                     updateStateFlow(mcBlockId, address, stateHash)
                 }
             }
         }
     }
 
-    suspend fun stateFlow(address: LiteServerAccountId) = exchangePairsStatesFlows.getOrPut(
+    suspend fun stateFlow(address: LiteServerAccountId) = accountStateFlows.getOrPut(
         address,
         defaultValue = { CompletableDeferred() }
     ).await().asStateFlow().map {
         it.first
+    }
+
+    fun removeStateFlow(address: LiteServerAccountId) {
+        accountStateFlows.remove(address)
     }
 
     private suspend fun updateStateFlow(
@@ -60,10 +59,7 @@ object ExchangePairsStateService : CoroutineScope {
         address: LiteServerAccountId,
         stateHash: Bits256
     ) {
-        val currentState = exchangePairsStatesFlows.getOrPut(
-            address,
-            defaultValue = { CompletableDeferred() }
-        )
+        val currentState = accountStateFlows[address] ?: return
         if (!currentState.isCompleted) {
             currentState.complete(MutableStateFlow(mcBlockId to stateHash))
         } else {
