@@ -1,6 +1,8 @@
 package finance.tegro.rest.v2.services
 
 import finance.tegro.rest.v2.dto.v1.ExchangePairDTOv1
+import finance.tegro.rest.v2.dto.v1.ReserveDTOv1
+import finance.tegro.rest.v2.utils.toAccountId
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -11,10 +13,15 @@ import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.datetime.Clock
+import org.slf4j.LoggerFactory
+import org.ton.block.AddrStd
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.minutes
 
 object PairV1CacheService : CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.Default + CoroutineName("PairV1CacheService")
+    private val log = LoggerFactory.getLogger(PairV1CacheService::class.java)
+    override val coroutineContext: CoroutineContext = Dispatchers.Default + CoroutineName(log.name)
 
     private val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -27,10 +34,24 @@ object PairV1CacheService : CoroutineScope {
             try {
                 val newPairs = getPairsV1()
                 if (newPairs != null && state.value != newPairs) {
-                    state.update { newPairs }
-                    println("new pairs: $newPairs")
+                    state.update {
+                        newPairs.mapNotNull {
+                            val accountId =
+                                AddrStd.parseUserFriendly(it.address).toAccountId() ?: return@mapNotNull null
+                            val reserves = ReservesService.reserves(accountId).value
+                            it.copy(
+                                reserve = ReserveDTOv1(
+                                    address = it.address,
+                                    base = reserves.base,
+                                    quote = reserves.quote,
+                                    timestamp = Clock.System.now()
+                                )
+                            )
+                        }
+                    }
+                    log.info("new cached pairs: $newPairs")
                 }
-                delay(1000)
+                delay(5.minutes)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

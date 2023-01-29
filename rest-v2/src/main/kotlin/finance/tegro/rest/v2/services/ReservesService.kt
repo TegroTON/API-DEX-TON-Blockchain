@@ -19,8 +19,8 @@ import org.ton.lite.api.liteserver.functions.LiteServerRunSmcMethod
 import kotlin.coroutines.CoroutineContext
 
 object ReservesService : CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.Default + CoroutineName(toString())
-    private val log = LoggerFactory.getLogger(toString())
+    private val log = LoggerFactory.getLogger(ReservesService::class.java)
+    override val coroutineContext: CoroutineContext = Dispatchers.Default + CoroutineName(log.name)
 
     private lateinit var job: Job
     private val stateFlows = ConcurrentMap<LiteServerAccountId, CompletableDeferred<MutableStateFlow<Reserves>>>()
@@ -97,6 +97,4 @@ object ReservesService : CoroutineScope {
             log.info("new reserves: $it")
         }
     }
-
-    override fun toString(): String = "Reserves"
 }

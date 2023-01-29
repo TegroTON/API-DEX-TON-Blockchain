@@ -22,8 +22,8 @@ import org.ton.tlb.loadTlb
 import kotlin.coroutines.CoroutineContext
 
 object PairsService : CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.Default + CoroutineName(toString())
-    private val log = LoggerFactory.getLogger(toString())
+    private val log = LoggerFactory.getLogger(PairsService::class.java)
+    override val coroutineContext: CoroutineContext = Dispatchers.Default + CoroutineName(log.name)
 
     private lateinit var job: Job
     private val stateFlows = ConcurrentMap<LiteServerAccountId, CompletableDeferred<MutableStateFlow<PairJettons>>>()
@@ -99,6 +99,4 @@ object PairsService : CoroutineScope {
             log.info("new pairs: $it")
         }
     }
-
-    override fun toString(): String = "Pairs"
 }

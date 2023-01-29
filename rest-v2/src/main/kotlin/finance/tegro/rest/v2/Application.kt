@@ -25,6 +25,7 @@ fun Application.module() {
     AccountStatesService.init()
     ReservesService.init()
     PairsService.init()
+    PairV1CacheService
 
     configureLogging()
     configureSerialization()

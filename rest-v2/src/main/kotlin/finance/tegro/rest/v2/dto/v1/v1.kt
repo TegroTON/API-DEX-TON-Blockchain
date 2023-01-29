@@ -8,6 +8,8 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.math.BigInteger
 
 @Serializable
@@ -21,7 +23,9 @@ data class ExchangePairDTOv1(
     @SerialName("token_timestamp")
     val tokenTimestamp: Instant?,
     val reserve: ReserveDTOv1?
-)
+) {
+    override fun toString(): String = Json.encodeToString(this)
+}
 
 @Serializable
 data class TokenDTOv1(
@@ -40,7 +44,9 @@ data class TokenDTOv1(
     val decimals: Int?,
     @SerialName("metadata_timestamp")
     val metadataTimestamp: Instant?
-)
+) {
+    override fun toString(): String = Json.encodeToString(this)
+}
 
 @Serializable
 data class ReserveDTOv1(
@@ -48,4 +54,6 @@ data class ReserveDTOv1(
     val base: BigInteger,
     val quote: BigInteger,
     val timestamp: Instant
-)
+) {
+    override fun toString(): String = Json.encodeToString(this)
+}
