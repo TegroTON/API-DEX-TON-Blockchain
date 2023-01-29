@@ -30,10 +30,6 @@ abstract class EntityMapper {
     @Mapping(target = "base", source = "exchangePair.token.baseToken")
     @Mapping(target = "quote", source = "exchangePair.token.quoteToken")
     @Mapping(target = "tokenTimestamp", source = "exchangePair.token.timestamp")
-    @Mapping(
-        target = "reserve",
-        expression = "java(toDTO(reserveRepository.findFirstByAddressOrderByBlockId_TimestampDesc(exchangePair.getAddress()).get()))"
-    )
     abstract fun toDTO(exchangePair: ExchangePair): ExchangePairDTO
 
     @Mapping(target = "address", source = "address")
