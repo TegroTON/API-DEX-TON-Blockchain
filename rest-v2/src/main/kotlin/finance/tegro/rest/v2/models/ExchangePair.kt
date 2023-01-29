@@ -54,7 +54,7 @@ private class ExchangePairFacadeCacheImpl(
     override suspend fun allExchangePairs(): List<LiteServerAccountId> = coroutineScope {
         val now = Clock.System.now()
         val currentAllExchangePairs = allExchangePairs.value
-        if (currentAllExchangePairs == null || now - allExchangePairsLastUpdate.value > 1.minutes) {
+        if (currentAllExchangePairs == null || (now - allExchangePairsLastUpdate.value > 1.minutes && allExchangePairs.value?.isCompleted != true)) {
             val job = async {
                 delegate.allExchangePairs()
             }

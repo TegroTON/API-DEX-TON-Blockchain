@@ -22,7 +22,7 @@ data class ExchangePairDTOv1(
     val quote: TokenDTOv1?,
     @SerialName("token_timestamp")
     val tokenTimestamp: Instant?,
-    val reserve: ReserveDTOv1?
+    val reserve: ReserveDTOv1? = null
 ) {
     override fun toString(): String = Json.encodeToString(this)
 }
