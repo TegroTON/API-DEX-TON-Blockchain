@@ -90,7 +90,7 @@ object ReservesService : CoroutineScope {
         ).result ?: return null
         val stackValues = VmStack.loadTlb(BagOfCells(result).first()).toMutableVmStack()
         return Reserves(
-            address = address,
+            liquidity = address,
             base = stackValues.popInt(),
             quote = stackValues.popInt()
         ).also {

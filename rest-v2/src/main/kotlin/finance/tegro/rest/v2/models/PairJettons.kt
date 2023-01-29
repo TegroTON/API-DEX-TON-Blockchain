@@ -11,7 +11,7 @@ import org.ton.lite.api.liteserver.LiteServerAccountId
 
 @Serializable
 data class PairJettons(
-    val address: LiteServerAccountId,
+    val liquidity: LiteServerAccountId,
     val base: LiteServerAccountId?,
     val quote: LiteServerAccountId?
 ) {

@@ -14,7 +14,7 @@ import java.math.BigInteger
 
 @Serializable
 data class Reserves(
-    val address: LiteServerAccountId,
+    val liquidity: LiteServerAccountId,
     val base: BigInteger,
     val quote: BigInteger
 ) {

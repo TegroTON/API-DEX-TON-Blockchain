@@ -92,7 +92,7 @@ object PairsService : CoroutineScope {
         val stackValues = VmStack.loadTlb(BagOfCells(result).first()).toMutableVmStack()
 
         return PairJettons(
-            address = address,
+            liquidity = address,
             base = stackValues.popSlice().loadTlb(MsgAddress).toAccountId(),
             quote = stackValues.popSlice().loadTlb(MsgAddress).toAccountId()
         ).also {
