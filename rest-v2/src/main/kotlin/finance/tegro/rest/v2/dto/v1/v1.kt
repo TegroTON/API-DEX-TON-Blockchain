@@ -11,11 +11,16 @@ import kotlinx.serialization.UseSerializers
 import java.math.BigInteger
 
 @Serializable
-data class ReserveDTOv1(
+data class ExchangePairDTOv1(
     val address: String,
-    val base: BigInteger,
-    val quote: BigInteger,
-    val timestamp: Instant
+    val timestamp: Instant,
+
+    val liquidity: TokenDTOv1?,
+    val base: TokenDTOv1?,
+    val quote: TokenDTOv1?,
+    @SerialName("token_timestamp")
+    val tokenTimestamp: Instant?,
+    val reserve: ReserveDTOv1?
 )
 
 @Serializable
@@ -38,14 +43,9 @@ data class TokenDTOv1(
 )
 
 @Serializable
-data class ExchangePairDTOv1(
+data class ReserveDTOv1(
     val address: String,
-    val timestamp: Instant,
-
-    val liquidity: TokenDTOv1?,
-    val base: TokenDTOv1?,
-    val quote: TokenDTOv1?,
-    @SerialName("token_timestamp")
-    val tokenTimestamp: Instant?,
-    val reserve: ReserveDTOv1?
+    val base: BigInteger,
+    val quote: BigInteger,
+    val timestamp: Instant
 )

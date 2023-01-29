@@ -1,8 +1,10 @@
 package finance.tegro.rest.v2.plugins
 
 import finance.tegro.rest.v2.dto.v1.ExchangePairDTOv1
+import finance.tegro.rest.v2.exchangePairsFacade
+import finance.tegro.rest.v2.services.MasterchainBlockService
 import finance.tegro.rest.v2.services.PairV1CacheService
-import io.ktor.http.*
+import finance.tegro.rest.v2.services.ReservesService
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -22,6 +24,23 @@ fun Application.configureRouting() = routing {
                         delay(1000)
                     }
                 }
+            }
+        }
+    }
+    route("/v2") {
+        route("/masterchain-block") {
+            get {
+                call.respond(MasterchainBlockService.blockIdFlow.value.toString())
+            }
+        }
+        route("/pairs") {
+            get {
+                call.respond(exchangePairsFacade.allExchangePairs())
+            }
+        }
+        route("/reserves") {
+            get {
+                call.respond(ReservesService.reservesAll())
             }
         }
     }

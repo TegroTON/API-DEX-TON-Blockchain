@@ -19,5 +19,4 @@ object StringBigIntegerSerializer : KSerializer<BigInteger> {
     override fun serialize(encoder: Encoder, value: BigInteger) {
         encoder.encodeString(value.toString())
     }
-
 }
