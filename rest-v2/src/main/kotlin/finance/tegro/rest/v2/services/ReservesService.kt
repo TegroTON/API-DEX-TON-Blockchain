@@ -69,9 +69,7 @@ object ReservesService : CoroutineScope {
             async {
                 reserves(address).value
             }
-        }.awaitAll().sortedByDescending {
-            it.base
-        }
+        }.awaitAll()
     }
 
     private suspend fun getReserves(
