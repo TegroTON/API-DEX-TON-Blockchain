@@ -205,33 +205,6 @@ class BlockJob(
 
         val exchangePair = AddrStd(blockId.workchain, transaction.account_addr)
 
-        // Trigger reserve update
-        val reserveJobKey =
-            JobKey("ReserveJob_${exchangePair.toSafeString()}_${blockId.id}", "ReserveJob")
-
-        if (!scheduler.checkExists(reserveJobKey))
-            scheduler.scheduleJob(
-                JobBuilder.newJob(ReserveJob::class.java)
-                    .withIdentity(reserveJobKey)
-                    .usingJobData(
-                        JobDataMap(
-                            mapOf(
-                                "address" to exchangePair,
-                                "blockId" to blockId
-                            )
-                        )
-                    )
-                    .build(),
-                TriggerBuilder.newTrigger()
-                    .withIdentity(
-                        "ReserveTrigger_${exchangePair.toSafeString()}_${blockId.id}",
-                        "ReserveTrigger"
-                    )
-                    .startNow()
-                    .build()
-            )
-
-
         // TODO: This is fucking ugly
         val inMsgOp = transaction.in_msg.value?.parseOp()?.let {
             if (it is SuccessfulSwapOp) { // Routing is happening here, simply unwrap inner op

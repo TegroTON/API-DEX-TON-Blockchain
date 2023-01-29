@@ -81,31 +81,6 @@ class ExchangePairJob(
                     .startNow()
                     .build()
             )
-
-        val reserveJobKey =
-            JobKey("ReserveJob_${address.toSafeString()}_${blockId.id}", "ReserveJob")
-
-        if (!scheduler.checkExists(reserveJobKey))
-            scheduler.scheduleJob(
-                JobBuilder.newJob(ReserveJob::class.java)
-                    .withIdentity(reserveJobKey)
-                    .usingJobData(
-                        JobDataMap(
-                            mapOf(
-                                "address" to address,
-                                "blockId" to blockId
-                            )
-                        )
-                    )
-                    .build(),
-                TriggerBuilder.newTrigger()
-                    .withIdentity(
-                        "ReserveTrigger_${address.toSafeString()}_${blockId.id}",
-                        "ReserveTrigger"
-                    )
-                    .startNow()
-                    .build()
-            )
     }
 
     companion object : KLogging()

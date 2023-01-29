@@ -1,6 +1,9 @@
 package finance.tegro.observer
 
-import finance.tegro.observer.job.*
+import finance.tegro.observer.job.AllExchangePairJob
+import finance.tegro.observer.job.AllTokenJob
+import finance.tegro.observer.job.CatchUpMissingBlockJob
+import finance.tegro.observer.job.MasterchainBlockIdJob
 import finance.tegro.observer.properties.ScheduleProperties
 import mu.KLogging
 import org.quartz.CronScheduleBuilder
@@ -35,15 +38,6 @@ class JobSchedule(
                 .startNow()
                 .build()
         )
-        scheduler.scheduleJob(
-            JobBuilder.newJob(AllReserveJob::class.java)
-                .withIdentity("AllReserveJob_startup", "AllReserveJob")
-                .build(),
-            TriggerBuilder.newTrigger()
-                .withIdentity("AllReserveTrigger_startup", "AllReserveTrigger")
-                .startNow()
-                .build()
-        )
 
         logger.info { "Scheduling cron jobs" }
         scheduler.scheduleJob(
@@ -66,18 +60,6 @@ class JobSchedule(
                 .withIdentity("AllTokenTrigger_cron", "AllTokenTrigger")
                 .withSchedule(
                     CronScheduleBuilder.cronScheduleNonvalidatedExpression(scheduleProperties.tokenCron)
-                )
-                .startNow()
-                .build()
-        )
-        scheduler.scheduleJob(
-            JobBuilder.newJob(AllReserveJob::class.java)
-                .withIdentity("AllReserveJob_cron", "AllReserveJob")
-                .build(),
-            TriggerBuilder.newTrigger()
-                .withIdentity("AllReserveTrigger_cron", "AllReserveTrigger")
-                .withSchedule(
-                    CronScheduleBuilder.cronScheduleNonvalidatedExpression(scheduleProperties.reserveCron)
                 )
                 .startNow()
                 .build()
