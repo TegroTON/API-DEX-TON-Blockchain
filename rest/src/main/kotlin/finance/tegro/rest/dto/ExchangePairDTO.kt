@@ -18,13 +18,9 @@ data class ExchangePairDTO(
     val quote: TokenDTO?,
     @JsonProperty("token_timestamp")
     val tokenTimestamp: Instant?,
-
-    @JsonProperty("reserve")
-    val reserve: ReserveDTO?,
 ) {
     fun inverse() = copy(
         base = quote,
         quote = base,
-        reserve = reserve?.inverse(),
     )
 }
