@@ -56,7 +56,7 @@ object ReservesService : CoroutineScope {
                         }
                     }
                 }
-                delay(1000)
+                delay(5000)
             }
         }
     }

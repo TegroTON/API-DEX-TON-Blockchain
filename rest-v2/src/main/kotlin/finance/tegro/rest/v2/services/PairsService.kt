@@ -59,7 +59,7 @@ object PairsService : CoroutineScope {
                         }
                     }
                 }
-                delay(1000)
+                delay(5000)
             }
         }
     }
