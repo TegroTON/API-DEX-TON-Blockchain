@@ -15,10 +15,9 @@ repositories {
 val ktor_version: String by project
 val exposed_version: String by project
 val ton_kotlin_version: String by project
+val ydb_version: String by project
 
 dependencies {
-    implementation(project(":ton-indexer"))
-
     implementation("io.ktor:ktor-server-cio:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
@@ -26,23 +25,17 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-server-call-logging:$ktor_version")
 
-    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
-    implementation("org.postgresql:postgresql:42.5.1")
-
     implementation("org.ton:ton-kotlin-liteclient:$ton_kotlin_version")
     implementation("org.ton:ton-kotlin-contract:$ton_kotlin_version")
+
+    implementation("tech.ydb:ydb-sdk-core:$ydb_version")
+    implementation("tech.ydb:ydb-sdk-table:$ydb_version")
+    implementation("tech.ydb.auth:yc-auth-provider:$ydb_version")
 
     implementation("ch.qos.logback:logback-classic:1.4.5")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.2")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     implementation("org.jetbrains.kotlinx:atomicfu:0.19.0")
-}
-
-application {
-    mainClass.set("io.ktor.server.cio.EngineMain")
 }
 
 ktor {
@@ -64,4 +57,8 @@ ktor {
             imageTag.set(it)
         }
     }
+}
+
+application {
+    mainClass.set("finance.tegro.tonindexer.TonIndexerKt")
 }

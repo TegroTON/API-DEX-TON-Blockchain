@@ -5,6 +5,8 @@ import finance.tegro.rest.v2.models.ExchangePairFacade
 import finance.tegro.rest.v2.models.Reserves
 import finance.tegro.rest.v2.utils.smcCreateParams
 import finance.tegro.rest.v2.utils.smcMethodId
+import finance.tegro.tonindexer.services.MasterchainBlockService
+import finance.tegro.tonindexer.services.TonLiteApiService
 import io.ktor.util.collections.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -46,11 +48,15 @@ object ReservesService : CoroutineScope {
                                     )!!
                                 )
                             )
-                            AccountStatesService.stateFlow(address).collectLatest { mcBlockId ->
+                            MasterchainBlockService.blockIdFlow.collectLatest { mcBlockId ->
                                 val reserves =
                                     getReserves(liteApi, mcBlockId, address) ?: return@collectLatest
-                                reservesStateFlow.await().update {
-                                    reserves
+                                val stateFlow = reservesStateFlow.await()
+                                if (stateFlow.value != reserves) {
+                                    stateFlow.update {
+                                        log.info("new reserves: $reserves")
+                                        reserves
+                                    }
                                 }
                             }
                         }
@@ -91,8 +97,6 @@ object ReservesService : CoroutineScope {
             liquidity = address,
             base = stackValues.popInt(),
             quote = stackValues.popInt()
-        ).also {
-            log.info("new reserves: $it")
-        }
+        )
     }
 }

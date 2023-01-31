@@ -1,4 +1,4 @@
-package finance.tegro.rest.v2.services
+package finance.tegro.tonindexer.services
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,13 +23,13 @@ object MasterchainBlockService : CoroutineScope {
         private set
 
     fun init(liteApi: LiteApi = TonLiteApiService.liteApi) {
-        this.liteApi = liteApi
+        MasterchainBlockService.liteApi = liteApi
         val initBlockId = runBlocking {
             liteApi(LiteServerGetMasterchainInfo).last
         }
         _blockIdFlow = MutableStateFlow(initBlockId)
         blockIdFlow = _blockIdFlow.asStateFlow()
-        this.job = launch {
+        job = launch {
             var blockId = initBlockId
             while (true) {
                 try {

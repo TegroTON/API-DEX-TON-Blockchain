@@ -5,6 +5,8 @@ import finance.tegro.rest.v2.models.JettonData
 import finance.tegro.rest.v2.utils.smcCreateParams
 import finance.tegro.rest.v2.utils.smcMethodId
 import finance.tegro.rest.v2.utils.toAccountId
+import finance.tegro.tonindexer.services.MasterchainBlockService
+import finance.tegro.tonindexer.services.TonLiteApiService
 import io.ktor.util.collections.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow

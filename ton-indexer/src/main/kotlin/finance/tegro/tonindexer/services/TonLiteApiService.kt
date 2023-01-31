@@ -1,4 +1,4 @@
-package finance.tegro.rest.v2.services
+package finance.tegro.tonindexer.services
 
 import io.ktor.util.*
 import kotlinx.coroutines.CoroutineName

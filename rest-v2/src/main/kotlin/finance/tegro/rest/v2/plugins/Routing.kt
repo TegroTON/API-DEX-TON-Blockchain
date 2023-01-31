@@ -1,9 +1,9 @@
 package finance.tegro.rest.v2.plugins
 
-import finance.tegro.rest.v2.services.MasterchainBlockService
 import finance.tegro.rest.v2.services.PairV1CacheService
 import finance.tegro.rest.v2.services.PairsService
 import finance.tegro.rest.v2.services.ReservesService
+import finance.tegro.tonindexer.services.MasterchainBlockService
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*

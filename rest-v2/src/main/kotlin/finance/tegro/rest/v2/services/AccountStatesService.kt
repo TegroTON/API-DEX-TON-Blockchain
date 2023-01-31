@@ -1,5 +1,7 @@
 package finance.tegro.rest.v2.services
 
+import finance.tegro.tonindexer.services.MasterchainBlockService
+import finance.tegro.tonindexer.services.TonLiteApiService
 import io.ktor.util.collections.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*

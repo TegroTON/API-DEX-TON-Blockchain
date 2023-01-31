@@ -6,6 +6,8 @@ import finance.tegro.rest.v2.plugins.configureLogging
 import finance.tegro.rest.v2.plugins.configureRouting
 import finance.tegro.rest.v2.plugins.configureSerialization
 import finance.tegro.rest.v2.services.*
+import finance.tegro.tonindexer.services.MasterchainBlockService
+import finance.tegro.tonindexer.services.TonLiteApiService
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
 
