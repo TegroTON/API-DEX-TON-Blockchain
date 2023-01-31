@@ -4,6 +4,7 @@ package finance.tegro.rest.v2.models
 
 import finance.tegro.rest.v2.utils.RawAccountIdSerializer
 import finance.tegro.rest.v2.utils.toAccountId
+import io.ktor.util.*
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -15,6 +16,7 @@ import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 import org.jetbrains.exposed.sql.selectAll
+import org.ton.block.AddrStd
 import org.ton.block.MsgAddress
 import org.ton.boc.BagOfCells
 import org.ton.lite.api.liteserver.LiteServerAccountId
@@ -65,4 +67,12 @@ private class ExchangePairFacadeCacheImpl(
             currentAllExchangePairs.await()
         }
     }
+}
+
+class StaticExchangePairFacade(
+    private val exchangePairs: List<LiteServerAccountId>
+) : ExchangePairFacade {
+    constructor(vararg rawAddress: String) : this(rawAddress.map { AddrStd(it).toAccountId()!! })
+
+    override suspend fun allExchangePairs(): List<LiteServerAccountId> = exchangePairs
 }
