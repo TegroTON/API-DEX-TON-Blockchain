@@ -1,3 +1,3 @@
-# Tegro.Finance — API & Documentation
-Tegro.Finance for Developer — Backend Services
+# API & Documentation — For DEX on TON
 
+API DEX on TON for Developer — Backend Services
