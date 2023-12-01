@@ -36,7 +36,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     implementation("org.springdoc:springdoc-openapi-ui:1.6.14")
-    implementation("org.springdoc:springdoc-openapi-kotlin:1.6.14")
+    implementation("org.springdoc:springdoc-openapi-kotlin:1.7.0")
     kapt("org.mapstruct:mapstruct-processor:1.5.3.Final")
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
