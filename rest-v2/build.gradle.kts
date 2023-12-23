@@ -36,7 +36,7 @@ dependencies {
     implementation("org.ton:ton-kotlin-contract:$ton_kotlin_version")
 
     implementation("ch.qos.logback:logback-classic:1.4.5")
-    implementation("com.github.ben-manes.caffeine:caffeine:3.1.2")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     implementation("org.jetbrains.kotlinx:atomicfu:0.19.0")
 }
