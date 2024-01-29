@@ -25,7 +25,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build image with gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: observer:bootBuildImage --imageName=${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }}
 
@@ -56,7 +56,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build image with gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: rest:bootBuildImage --imageName=${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }}
 
@@ -86,7 +86,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build image with gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: rest-v2:publishImageToLocalRegistry -Pdocker.imageName=${{ env.REGISTRY }}/${{ env.IMAGE }} -Pdocker.imageTag=${{ github.ref_name }}
 
