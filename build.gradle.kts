@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm") version "1.7.22" apply false
     kotlin("kapt") version "1.7.22" apply false
     kotlin("plugin.spring") version "1.9.22" apply false
-    kotlin("plugin.jpa") version "1.7.22" apply false
+    kotlin("plugin.jpa") version "1.9.25" apply false
     kotlin("plugin.serialization") version "1.9.22" apply false
     id("io.ktor.plugin") version "2.2.2" apply false
 }
