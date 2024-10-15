@@ -32,7 +32,7 @@ dependencies {
     implementation("tech.ydb:ydb-sdk-table:$ydb_version")
     implementation("tech.ydb.auth:yc-auth-provider:$ydb_version")
 
-    implementation("ch.qos.logback:logback-classic:1.4.5")
+    implementation("ch.qos.logback:logback-classic:1.5.11")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.2")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     implementation("org.jetbrains.kotlinx:atomicfu:0.23.2")
