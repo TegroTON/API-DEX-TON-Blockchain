@@ -57,6 +57,49 @@ Follow the detailed instructions provided in the gradlew and gradle/wrapper file
 
 We are deeply committed to open-source collaboration and encourage contributions from the developer community. Whether it's bug fixes, enhancements, documentation improvements, or new feature development, your input is invaluable. Please adhere to our contribution guidelines to ensure a smooth collaboration process.
 
+## Tech Stack
+
+- **Language:** Kotlin (JVM)
+- **Framework:** Spring Boot with `springdoc-openapi-kotlin` (OpenAPI / Swagger docs)
+- **TON integration:** `ton-kotlin` + a dedicated TON indexer module
+- **Build:** Gradle (Kotlin DSL — `build.gradle.kts`, `settings.gradle.kts`) with the Gradle wrapper
+- **Dependency automation:** Renovate
+
+### Build & Run
+
+```bash
+# Clone
+git clone https://github.com/TegroTON/API-DEX-TON-Blockchain.git
+cd API-DEX-TON-Blockchain
+
+# Build with the Gradle wrapper
+./gradlew build
+
+# Run the API
+./gradlew bootRun
+```
+
+Once running, the OpenAPI / Swagger UI is served by springdoc and documents the available REST endpoints (pools, tokens, prices and swap data).
+
+## Architecture & Related Repositories
+
+This API powers the data layer of the [Tegro Finance](https://tegro.finance) DEX. It works alongside the rest of the open-source stack:
+
+| Layer | Repository | Stack |
+|---|---|---|
+| Web app (full) | [TON-DEX-TegroFinance-Web-Frontend](https://github.com/TegroTON/TON-DEX-TegroFinance-Web-Frontend) | TypeScript · React |
+| Web app (lite) | [TON-DEX-TegroFinance-Web-Frontend-Lite](https://github.com/TegroTON/TON-DEX-TegroFinance-Web-Frontend-Lite) | TypeScript · React |
+| Backend / indexer | [TON-DEX-TegroFinance-Web-Backend](https://github.com/TegroTON/TON-DEX-TegroFinance-Web-Backend) | Python · FastAPI |
+| **Public DEX API** | **API-DEX-TON-Blockchain** *(this repo)* | Kotlin |
+
+## Tegro Ecosystem
+
+- 🔁 **DEX** — https://tegro.finance
+- 💳 **Payments (Tegro Money)** — https://tegro.money
+- 👛 **Wallet** — https://t.me/TegroMoneyBot
+- 💬 **Community** — https://t.me/TegroMoney
+- 🏠 **All open-source repos** — https://github.com/TegroTON
+
 ## License Details
 
 This project is distributed under the MIT License. This permissive license grants extensive freedoms, allowing for both private and commercial use, modification, and distribution of the software. For full license details, please refer to the LICENSE document.
